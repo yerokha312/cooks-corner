@@ -5,6 +5,7 @@ import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.enums.TokenType;
 import dev.yerokha.cookscorner.exception.InvalidTokenException;
 import dev.yerokha.cookscorner.repository.TokenRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -89,7 +90,7 @@ public class TokenService {
         Instant now = Instant.now();
         String scopes = getScopes(entity);
 
-        JwtClaimsSet claims = getClaims(now, expirationTime, entity.getUsername(), scopes, tokenType);
+        JwtClaimsSet claims = getClaims(now, expirationTime, entity.getUsername(), entity.getUserId(), scopes, tokenType);
         return encodeToken(claims);
     }
 
@@ -99,7 +100,7 @@ public class TokenService {
                 .collect(Collectors.joining(" "));
     }
 
-    private JwtClaimsSet getClaims(Instant now, long expirationTime, String subject, String scopes, TokenType tokenType) {
+    private JwtClaimsSet getClaims(Instant now, long expirationTime, String subject, Long userId, String scopes, TokenType tokenType) {
         return JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
@@ -107,6 +108,7 @@ public class TokenService {
                 .subject(subject)
                 .claim("scopes", scopes)
                 .claim("tokenType", tokenType)
+                .claim("userId", userId)
                 .build();
     }
 
@@ -132,6 +134,11 @@ public class TokenService {
         }
     }
 
+    public static Long getUserIdFromAuthToken(Authentication authentication) {
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        return jwt.getClaim("userId");
+    }
+
     public String refreshAccessToken(String refreshToken) {
         Jwt decodedToken = decodeToken(refreshToken);
         String email = decodedToken.getSubject();
@@ -149,8 +156,9 @@ public class TokenService {
 
         Instant now = Instant.now();
         String subject = decodedToken.getSubject();
+        Long userId = decodedToken.getClaim("userId");
         String scopes = decodedToken.getClaim("scopes");
-        JwtClaimsSet claims = getClaims(now, ACCESS_TOKEN_EXPIRATION, subject, scopes, TokenType.ACCESS);
+        JwtClaimsSet claims = getClaims(now, ACCESS_TOKEN_EXPIRATION, subject, userId, scopes, TokenType.ACCESS);
         String token = encodeToken(claims);
         String key = "access_token:" + email;
         setValue(key, encryptToken(token), ACCESS_TOKEN_EXPIRATION, TimeUnit.MINUTES);

@@ -47,5 +47,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(FollowException.class)
+    public ResponseEntity<String> handleFollowException(FollowException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
 
 }
