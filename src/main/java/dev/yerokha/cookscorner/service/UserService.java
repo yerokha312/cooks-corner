@@ -27,16 +27,26 @@ public class UserService implements UserDetailsService {
                 new UsernameNotFoundException("User not found"));
     }
 
-    public User getUser(Long userId) {
+    public User getUser(Long userId, Long userIdFromAuthToken) {
         UserEntity entity = getUserById(userId);
+        Boolean isFollowed = checkIfUserFollowed(userId, userIdFromAuthToken);
         return new User(
                 entity.getName(),
                 entity.getBio(),
                 entity.getProfilePicture() == null ? null : entity.getProfilePicture().getImageUrl(),
                 entity.getRecipes().size(),
                 entity.getFollowers().size(),
-                entity.getFollowing().size()
+                entity.getFollowing().size(),
+                isFollowed
         );
+    }
+
+    private Boolean checkIfUserFollowed(Long userId, Long userIdFromAuthToken) {
+        if (userIdFromAuthToken == null) {
+            return null;
+        }
+
+        return userRepository.existsByUserIdAndFollowingUserId(userIdFromAuthToken, userId);
     }
 
     public void follow(Long userId, Long userIdFromAuthToken) {

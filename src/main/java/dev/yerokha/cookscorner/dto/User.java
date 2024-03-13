@@ -6,6 +6,7 @@ public record User(
         String photoUrl,
         int recipes,
         int followers,
-        int following
+        int following,
+        Boolean isFollowed
 ) {
 }

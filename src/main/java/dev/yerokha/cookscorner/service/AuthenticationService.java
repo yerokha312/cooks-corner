@@ -42,7 +42,7 @@ public class AuthenticationService {
     }
 
 
-    public void createUser(RegistrationRequest request) {
+    public String createUser(RegistrationRequest request) {
         String email = request.email();
         if (!isEmailAvailable(email)) {
             throw new EmailAlreadyTakenException(String.format("Email %s already taken", email));
@@ -57,6 +57,8 @@ public class AuthenticationService {
         userRepository.save(entity);
 
         sendConfirmationEmail(request.url(), email);
+
+        return email;
     }
 
     public boolean isEmailAvailable(String email) {
@@ -71,7 +73,7 @@ public class AuthenticationService {
             throw new UserAlreadyEnabledException("User has already confirmed email address");
         }
         String confirmationToken = tokenService.generateConfirmationToken(entity);
-        mailService.sendConfirmationEmail(entity.getEmail(), url + "?ct=" + confirmationToken);
+        mailService.sendEmailConfirmation(entity.getEmail(), url + "?ct=" + confirmationToken, entity.getName());
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -116,8 +118,8 @@ public class AuthenticationService {
             return;
         }
         String confirmationToken = tokenService.generateConfirmationToken(entity);
-        mailService.sendConfirmationEmail(entity.getEmail(),
-                (url + "?rpt=" + confirmationToken));
+        mailService.sendPasswordReset(entity.getEmail(),
+                (url + "?rpt=" + confirmationToken), entity.getName());
     }
 
     public void resetPassword(String password, String encryptedToken) {

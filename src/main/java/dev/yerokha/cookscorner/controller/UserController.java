@@ -23,8 +23,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<User> showProfile(@PathVariable Long userId) {
-        return ResponseEntity.ok(userService.getUser(userId));
+    public ResponseEntity<User> showProfile(@PathVariable Long userId, Authentication authentication) {
+        Long userIdFromAuthToken = null;
+        if (authentication != null) {
+            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
+        }
+        return ResponseEntity.ok(userService.getUser(userId, userIdFromAuthToken));
     }
 
     @PostMapping("/{userId}/follow")
