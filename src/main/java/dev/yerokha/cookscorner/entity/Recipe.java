@@ -47,8 +47,8 @@ public class Recipe {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany
-    private Set<RecipeIngredient> ingredients;
+    @OneToMany(mappedBy = "recipe")
+    private Set<RecipeIngredient> recipeIngredients;
 
     @Column(name = "difficulty", nullable = false)
     @Enumerated(EnumType.STRING)
