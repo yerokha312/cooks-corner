@@ -3,18 +3,25 @@ package dev.yerokha.cookscorner.service;
 import dev.yerokha.cookscorner.dto.UpdateProfileRequest;
 import dev.yerokha.cookscorner.dto.UpdateProfileResponse;
 import dev.yerokha.cookscorner.dto.User;
+import dev.yerokha.cookscorner.dto.UserSearchResponse;
 import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.exception.FollowException;
 import dev.yerokha.cookscorner.exception.IdMismatchException;
 import dev.yerokha.cookscorner.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import static java.lang.Integer.parseInt;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -129,6 +136,25 @@ public class UserService implements UserDetailsService {
                 entity.getBio(),
                 entity.getProfilePicture() == null ? null : entity.getProfilePicture().getImageUrl()
         );
+    }
+
+    public Page<UserSearchResponse> search(Map<String, String> params) {
+        Pageable pageable = PageRequest.of(
+                parseInt(params.getOrDefault("page", "0")),
+                parseInt(params.getOrDefault("size", "12")));
+        String query = params.get("query");
+        if (query == null || query.isEmpty()) {
+            return userRepository.findAllByOrderByFollowersDesc(pageable)
+                    .map(entity -> new UserSearchResponse(
+                            entity.getUserId(), entity.getName(), entity.getProfilePicture() == null ? null :
+                            entity.getProfilePicture().getImageUrl()
+                    ));
+        }
+        return userRepository.findByNameContainingIgnoreCaseOrBioContainingIgnoreCase(query, query, pageable)
+                .map(entity -> new UserSearchResponse(
+                        entity.getUserId(), entity.getName(), entity.getProfilePicture() == null ? null :
+                        entity.getProfilePicture().getImageUrl()
+                ));
     }
 }
 
