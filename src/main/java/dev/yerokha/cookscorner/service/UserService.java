@@ -143,7 +143,7 @@ public class UserService implements UserDetailsService {
                 parseInt(params.getOrDefault("page", "0")),
                 parseInt(params.getOrDefault("size", "12")));
         String query = params.get("query");
-        if (query.isEmpty()) {
+        if (query == null || query.isEmpty()) {
             return userRepository.findAllByOrderByFollowersDesc(pageable)
                     .map(entity -> new UserSearchResponse(
                             entity.getUserId(), entity.getName(), entity.getProfilePicture() == null ? null :
