@@ -13,7 +13,7 @@ public record RegistrationRequest(
         String email,
         @NotNull @NotEmpty
         @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-={}:;.,<>/?]).{8,15}$",
-        message = "Password length must be 8-15 and contains 1 upper, 1 lower and 1 special symbol")
+                message = "Password length must be 8-15 and contains 1 upper, 1 lower and 1 special symbol")
         String password,
         @NotNull @NotEmpty
         String url
