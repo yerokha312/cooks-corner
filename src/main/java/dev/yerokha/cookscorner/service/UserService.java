@@ -1,13 +1,17 @@
 package dev.yerokha.cookscorner.service;
 
+import dev.yerokha.cookscorner.dto.UpdateProfileRequest;
+import dev.yerokha.cookscorner.dto.UpdateProfileResponse;
 import dev.yerokha.cookscorner.dto.User;
 import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.exception.FollowException;
+import dev.yerokha.cookscorner.exception.IdMismatchException;
 import dev.yerokha.cookscorner.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
 import java.util.Set;
@@ -16,9 +20,11 @@ import java.util.Set;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final ImageService imageService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, ImageService imageService) {
         this.userRepository = userRepository;
+        this.imageService = imageService;
     }
 
     @Override
@@ -31,6 +37,7 @@ public class UserService implements UserDetailsService {
         UserEntity entity = getUserById(userId);
         Boolean isFollowed = checkIfUserFollowed(userId, userIdFromAuthToken);
         return new User(
+                entity.getUserId(),
                 entity.getName(),
                 entity.getBio(),
                 entity.getProfilePicture() == null ? null : entity.getProfilePicture().getImageUrl(),
@@ -42,7 +49,7 @@ public class UserService implements UserDetailsService {
     }
 
     private Boolean checkIfUserFollowed(Long userId, Long userIdFromAuthToken) {
-        if (userIdFromAuthToken == null) {
+        if (userIdFromAuthToken == null || userId.equals(userIdFromAuthToken)) {
             return null;
         }
 
@@ -101,5 +108,27 @@ public class UserService implements UserDetailsService {
                 new UsernameNotFoundException("User not found"));
     }
 
+    public UpdateProfileResponse updateUser(UpdateProfileRequest request, Long userIdFromAuthToken, MultipartFile image) {
+        if (!Objects.equals(request.userId(), userIdFromAuthToken)) {
+            throw new IdMismatchException("User id must match");
+        }
+
+        UserEntity entity = getUserById(userIdFromAuthToken);
+        entity.setName(request.name());
+        entity.setBio(request.bio());
+
+        if (image != null) {
+            entity.setProfilePicture(imageService.processImage(image));
+        }
+
+        userRepository.save(entity);
+
+        return new UpdateProfileResponse(
+                entity.getUserId(),
+                entity.getName(),
+                entity.getBio(),
+                entity.getProfilePicture() == null ? null : entity.getProfilePicture().getImageUrl()
+        );
+    }
 }
 
