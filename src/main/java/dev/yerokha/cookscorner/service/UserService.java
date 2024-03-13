@@ -1,20 +1,30 @@
 package dev.yerokha.cookscorner.service;
 
+import dev.yerokha.cookscorner.dto.UpdateProfileRequest;
+import dev.yerokha.cookscorner.dto.UpdateProfileResponse;
 import dev.yerokha.cookscorner.dto.User;
 import dev.yerokha.cookscorner.entity.UserEntity;
+import dev.yerokha.cookscorner.exception.FollowException;
+import dev.yerokha.cookscorner.exception.IdMismatchException;
 import dev.yerokha.cookscorner.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final ImageService imageService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, ImageService imageService) {
         this.userRepository = userRepository;
+        this.imageService = imageService;
     }
 
     @Override
@@ -23,10 +33,102 @@ public class UserService implements UserDetailsService {
                 new UsernameNotFoundException("User not found"));
     }
 
-    public User getUser(String email) {
-        UserEntity entity = (UserEntity) loadUserByUsername(email);
-        return new User(entity.getName(), entity.getEmail());
+    public User getUser(Long userId, Long userIdFromAuthToken) {
+        UserEntity entity = getUserById(userId);
+        Boolean isFollowed = checkIfUserFollowed(userId, userIdFromAuthToken);
+        return new User(
+                entity.getUserId(),
+                entity.getName(),
+                entity.getBio(),
+                entity.getProfilePicture() == null ? null : entity.getProfilePicture().getImageUrl(),
+                entity.getRecipes().size(),
+                entity.getFollowers().size(),
+                entity.getFollowing().size(),
+                isFollowed
+        );
     }
 
+    private Boolean checkIfUserFollowed(Long userId, Long userIdFromAuthToken) {
+        if (userIdFromAuthToken == null || userId.equals(userIdFromAuthToken)) {
+            return null;
+        }
+
+        return userRepository.existsByUserIdAndFollowingUserId(userIdFromAuthToken, userId);
+    }
+
+    public void follow(Long userId, Long userIdFromAuthToken) {
+        if (Objects.equals(userId, userIdFromAuthToken)) {
+            throw new FollowException("You can not follow yourself");
+        }
+
+        UserEntity loggedInUser = getUserById(userIdFromAuthToken);
+
+        UserEntity followedUser = getUserById(userId);
+
+        Set<UserEntity> followingList = loggedInUser.getFollowing();
+        Set<UserEntity> followersList = followedUser.getFollowers();
+
+        // Add the followed user to the following list
+        followingList.add(followedUser);
+        loggedInUser.setFollowing(followingList);
+
+        // Add the current user to the followers list of the followee
+        followersList.add(loggedInUser);
+        followedUser.setFollowers(followersList);
+
+        // Update both users
+        userRepository.save(loggedInUser);
+        userRepository.save(followedUser);
+
+    }
+
+    public void unfollow(Long userId, Long userIdFromAuthToken) {
+        UserEntity loggedInUser = getUserById(userIdFromAuthToken);
+
+        UserEntity followedUser = getUserById(userId);
+
+        Set<UserEntity> followingList = loggedInUser.getFollowing();
+        Set<UserEntity> followersList = followedUser.getFollowers();
+
+        // Remove the followed user from the following list
+        followingList.remove(followedUser);
+        loggedInUser.setFollowing(followingList);
+
+        // Remove the current user from the followers list of the followee
+        followersList.remove(loggedInUser);
+        followedUser.setFollowers(followersList);
+
+        // Update both users
+        userRepository.save(loggedInUser);
+        userRepository.save(followedUser);
+    }
+
+    private UserEntity getUserById(Long userIdFromAuthToken) {
+        return userRepository.findById(userIdFromAuthToken).orElseThrow(() ->
+                new UsernameNotFoundException("User not found"));
+    }
+
+    public UpdateProfileResponse updateUser(UpdateProfileRequest request, Long userIdFromAuthToken, MultipartFile image) {
+        if (!Objects.equals(request.userId(), userIdFromAuthToken)) {
+            throw new IdMismatchException("User id must match");
+        }
+
+        UserEntity entity = getUserById(userIdFromAuthToken);
+        entity.setName(request.name());
+        entity.setBio(request.bio());
+
+        if (image != null) {
+            entity.setProfilePicture(imageService.processImage(image));
+        }
+
+        userRepository.save(entity);
+
+        return new UpdateProfileResponse(
+                entity.getUserId(),
+                entity.getName(),
+                entity.getBio(),
+                entity.getProfilePicture() == null ? null : entity.getProfilePicture().getImageUrl()
+        );
+    }
 }
 

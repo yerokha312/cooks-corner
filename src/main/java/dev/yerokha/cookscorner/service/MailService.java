@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.util.Map;
+
 @Service
 public class MailService implements NotificationService {
 
@@ -42,15 +44,22 @@ public class MailService implements NotificationService {
         }
     }
 
-    public void sendConfirmationEmail(String to, String confirmationUrl) {
+    public void sendEmailConfirmation(String to, String confirmationUrl, String name) {
         Context context = new Context();
-        context.setVariable("confirmationUrl", confirmationUrl);
+        context.setVariables(Map.of("confirmationUrl", confirmationUrl, "name", name));
 
-        String emailBody = engine.process(confirmationUrl
-                .contains("confirmation") ? "confirmation_email" : "confirmation_password", context);
+        String emailBody = engine.process("confirmation_email", context);
 
-        send(to, confirmationUrl
-                .contains("confirmation") ? "Email confirmation" : "Password reset", emailBody);
+        send(to, "Email confirmation", emailBody);
+    }
+
+    public void sendPasswordReset(String to, String confirmationUrl, String name) {
+        Context context = new Context();
+        context.setVariables(Map.of("confirmationUrl", confirmationUrl, "name", name));
+
+        String emailBody = engine.process("reset_password_email", context);
+
+        send(to, "Password reset", emailBody);
     }
 }
 

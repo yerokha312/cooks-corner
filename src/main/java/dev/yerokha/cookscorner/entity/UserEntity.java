@@ -2,18 +2,24 @@ package dev.yerokha.cookscorner.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -23,17 +29,46 @@ public class UserEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "bio", length = 500)
+    private String bio;
+
+    @ManyToOne
+    @JoinColumn(name = "image_id")
+    private Image profilePicture;
+
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
+
+    @OneToMany(mappedBy = "userEntity")
+    private Set<Recipe> recipes = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "following",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "following_id")}
+    )
+    private Set<UserEntity> following = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "followers",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "follower_id")}
+    )
+    private Set<UserEntity> followers = new HashSet<>();
+
+    @Column(name = "registered_at")
+    private LocalDateTime registeredAt;
 
     @Column(name = "is_enabled")
     private boolean isEnabled;
@@ -93,4 +128,36 @@ public class UserEntity implements UserDetails {
     public boolean isEnabled() {
         return isEnabled;
     }
+
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "userId=" + userId +
+                ", name='" + name + '\'' +
+                ", bio='" + bio + '\'' +
+                ", profilePicture=" + profilePicture +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", recipes=" + recipes.size() +
+                ", following=" + following.size() +
+                ", followers=" + followers.size() +
+                ", registeredAt=" + registeredAt +
+                ", isEnabled=" + isEnabled +
+                ", authorities=" + authorities +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity that = (UserEntity) o;
+        return isEnabled == that.isEnabled && Objects.equals(userId, that.userId) && Objects.equals(name, that.name) && Objects.equals(bio, that.bio) && Objects.equals(profilePicture, that.profilePicture) && Objects.equals(email, that.email) && Objects.equals(registeredAt, that.registeredAt) && Objects.equals(authorities, that.authorities);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId, name, bio, profilePicture, email, registeredAt, isEnabled, authorities);
+    }
 }
+

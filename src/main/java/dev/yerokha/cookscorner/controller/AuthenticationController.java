@@ -44,8 +44,9 @@ public class AuthenticationController {
     )
     @PostMapping("/registration")
     public ResponseEntity<String> register(@RequestBody @Valid RegistrationRequest request) {
-        authenticationService.createUser(request);
-        return new ResponseEntity<>("Confirmation link generated, email sent", HttpStatus.CREATED);
+        String email = authenticationService.createUser(request);
+        return new ResponseEntity<>(String.format(
+                "Confirmation link generated, email sent to %s", email), HttpStatus.CREATED);
     }
 
     @Operation(
