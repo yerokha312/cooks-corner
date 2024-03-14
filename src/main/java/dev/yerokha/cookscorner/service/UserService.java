@@ -7,13 +7,13 @@ import dev.yerokha.cookscorner.dto.UserSearchResponse;
 import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.exception.FollowException;
 import dev.yerokha.cookscorner.exception.IdMismatchException;
+import dev.yerokha.cookscorner.exception.NotFoundException;
 import dev.yerokha.cookscorner.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +37,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) {
         return userRepository.findByEmail(email).orElseThrow(() ->
-                new UsernameNotFoundException("User not found"));
+                new NotFoundException("User not found"));
     }
 
     public User getUser(Long userId, Long userIdFromAuthToken) {
@@ -48,7 +48,7 @@ public class UserService implements UserDetailsService {
                 entity.getName(),
                 entity.getBio(),
                 entity.getProfilePicture() == null ? null : entity.getProfilePicture().getImageUrl(),
-                entity.getRecipes().size(),
+                entity.getRecipeEntities().size(),
                 entity.getFollowers().size(),
                 entity.getFollowing().size(),
                 isFollowed
@@ -112,7 +112,7 @@ public class UserService implements UserDetailsService {
 
     private UserEntity getUserById(Long userIdFromAuthToken) {
         return userRepository.findById(userIdFromAuthToken).orElseThrow(() ->
-                new UsernameNotFoundException("User not found"));
+                new NotFoundException("User not found"));
     }
 
     public UpdateProfileResponse updateUser(UpdateProfileRequest request, Long userIdFromAuthToken, MultipartFile image) {

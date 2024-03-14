@@ -46,6 +46,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/users/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/recipes/**").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/**").permitAll()

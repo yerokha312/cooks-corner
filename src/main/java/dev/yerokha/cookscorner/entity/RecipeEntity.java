@@ -1,6 +1,7 @@
 package dev.yerokha.cookscorner.entity;
 
 import dev.yerokha.cookscorner.enums.Difficulty;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,15 +16,16 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 
-@Data
+@Getter @Setter
 @Entity
 @Table(name = "recipe")
-public class Recipe {
+public class RecipeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,7 +49,7 @@ public class Recipe {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(mappedBy = "recipe")
+    @OneToMany(mappedBy = "recipeEntity", cascade = CascadeType.ALL)
     private Set<RecipeIngredient> recipeIngredients;
 
     @Column(name = "difficulty", nullable = false)
@@ -80,4 +82,22 @@ public class Recipe {
     @Column(name = "view_count")
     private Long viewCount;
 
+    @Override
+    public String toString() {
+        return "RecipeEntity{" +
+                "recipeId=" + recipeId +
+                ", createdAt=" + createdAt +
+                ", title='" + title + '\'' +
+                ", image=" + image +
+                ", description='" + description + '\'' +
+                ", category=" + category +
+                ", recipeIngredients=" + recipeIngredients.size() +
+                ", difficulty=" + difficulty +
+                ", cookingTimeMinutes=" + cookingTimeMinutes +
+                ", userEntity=" + userEntity +
+                ", likes=" + likes.size() +
+                ", bookmarks=" + bookmarks.size() +
+                ", viewCount=" + viewCount +
+                '}';
+    }
 }
