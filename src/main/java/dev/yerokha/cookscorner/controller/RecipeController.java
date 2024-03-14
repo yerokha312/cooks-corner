@@ -16,6 +16,7 @@ import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -101,5 +102,57 @@ public class RecipeController {
         }
 
         return ResponseEntity.ok(recipeService.getRecipeById(recipeId, userIdFromAuthToken));
+    }
+
+    @PutMapping("/{recipeId}/like")
+    public ResponseEntity<String> likeRecipe(Authentication authentication, @PathVariable Long recipeId) {
+        Long userIdFromAuthToken = null;
+
+        if (authentication != null) {
+            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
+        }
+
+        recipeService.likeRecipe(recipeId, userIdFromAuthToken);
+
+        return ResponseEntity.ok("Recipe liked successfully");
+    }
+
+    @PutMapping("/{recipeId}/dislike")
+    public ResponseEntity<String> dislikeRecipe(Authentication authentication, @PathVariable Long recipeId) {
+        Long userIdFromAuthToken = null;
+
+        if (authentication != null) {
+            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
+        }
+
+        recipeService.dislikeRecipe(recipeId, userIdFromAuthToken);
+
+        return ResponseEntity.ok("Recipe disliked successfully");
+    }
+
+    @PutMapping("/{recipeId}/bookmark")
+    public ResponseEntity<String> bookmarkRecipe(Authentication authentication, @PathVariable Long recipeId) {
+        Long userIdFromAuthToken = null;
+
+        if (authentication != null) {
+            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
+        }
+
+        recipeService.bookmarkRecipe(recipeId, userIdFromAuthToken);
+
+        return ResponseEntity.ok("Recipe bookmarked successfully");
+    }
+
+    @PutMapping("/{recipeId}/remove-bookmark")
+    public ResponseEntity<String> removeBookmarkRecipe(Authentication authentication, @PathVariable Long recipeId) {
+        Long userIdFromAuthToken = null;
+
+        if (authentication != null) {
+            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
+        }
+
+        recipeService.removeBookmark(recipeId, userIdFromAuthToken);
+
+        return ResponseEntity.ok("Bookmark removed successfully");
     }
 }

@@ -7,6 +7,7 @@ import dev.yerokha.cookscorner.dto.RecipeDto;
 import dev.yerokha.cookscorner.entity.IngredientEntity;
 import dev.yerokha.cookscorner.entity.RecipeEntity;
 import dev.yerokha.cookscorner.entity.RecipeIngredient;
+import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.enums.Difficulty;
 import dev.yerokha.cookscorner.exception.NotFoundException;
 import dev.yerokha.cookscorner.repository.CategoryRepository;
@@ -92,15 +93,15 @@ public class RecipeService {
                 entity.getCookingTimeMinutes(),
                 entity.getDifficulty().name(),
                 entity.getDescription(),
+                entity.getLikes().size(),
+                entity.getBookmarks().size(),
+                isLiked,
+                isBookmarked,
                 entity.getRecipeIngredients().stream()
                         .map(ri -> new Ingredient(ri.getIngredientEntity().getIngredientName(),
                                 ri.getAmount(),
                                 ri.getMeasureUnit()))
-                        .collect(Collectors.toSet()),
-                entity.getLikes().size(),
-                entity.getBookmarks().size(),
-                isLiked,
-                isBookmarked
+                        .collect(Collectors.toSet())
         );
     }
 
@@ -136,11 +137,11 @@ public class RecipeService {
 
     private Page<RecipeDto> getRecipesByQuery(Long userIdFromAuthToken, String query, Pageable pageable) {
         return recipeRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
-                        query, query, pageable).map(entity -> {
-                    Boolean isLiked = checkLiked(entity.getRecipeId(), userIdFromAuthToken);
-                    Boolean isBookmarked = checkBookmarked(entity.getRecipeId(), userIdFromAuthToken);
-                    return getRecipeDto(entity, isLiked, isBookmarked);
-                });
+                query, query, pageable).map(entity -> {
+            Boolean isLiked = checkLiked(entity.getRecipeId(), userIdFromAuthToken);
+            Boolean isBookmarked = checkBookmarked(entity.getRecipeId(), userIdFromAuthToken);
+            return getRecipeDto(entity, isLiked, isBookmarked);
+        });
 
     }
 
@@ -201,6 +202,90 @@ public class RecipeService {
         Boolean isLiked;
         isLiked = userRepository.existsByUserIdAndLikedRecipes_RecipeId(userIdFromAuthToken, recipeId);
         return isLiked;
+    }
+
+    public void likeRecipe(Long recipeId, Long userIdFromAuthToken) {
+        UserEntity user = getUserEntity(userIdFromAuthToken);
+
+        RecipeEntity recipe = getRecipeById(recipeId);
+
+        Set<RecipeEntity> likedRecipes = user.getLikedRecipes();
+        Set<UserEntity> likedUsers = recipe.getLikes();
+
+        likedRecipes.add(recipe);
+        user.setLikedRecipes(likedRecipes);
+
+        likedUsers.add(user);
+        recipe.setLikes(likedUsers);
+
+        userRepository.save(user);
+        recipeRepository.save(recipe);
+    }
+
+    public void dislikeRecipe(Long recipeId, Long userIdFromAuthToken) {
+        UserEntity user = getUserEntity(userIdFromAuthToken);
+
+        RecipeEntity recipe = getRecipeById(recipeId);
+
+        Set<RecipeEntity> likedRecipes = user.getLikedRecipes();
+        Set<UserEntity> likedUsers = recipe.getLikes();
+
+        likedRecipes.remove(recipe);
+        user.setLikedRecipes(likedRecipes);
+
+        likedUsers.remove(user);
+        recipe.setLikes(likedUsers);
+
+        userRepository.save(user);
+        recipeRepository.save(recipe);
+    }
+
+    public void bookmarkRecipe(Long recipeId, Long userIdFromAuthToken) {
+        UserEntity user = getUserEntity(userIdFromAuthToken);
+
+        RecipeEntity recipe = getRecipeById(recipeId);
+
+        Set<RecipeEntity> bookmarkedRecipes = user.getBookmarkedRecipes();
+        Set<UserEntity> bookmarkedUsers = recipe.getBookmarks();
+
+        bookmarkedRecipes.add(recipe);
+        user.setBookmarkedRecipes(bookmarkedRecipes);
+
+        bookmarkedUsers.add(user);
+        recipe.setBookmarks(bookmarkedUsers);
+
+        userRepository.save(user);
+        recipeRepository.save(recipe);
+    }
+
+    public void removeBookmark(Long recipeId, Long userIdFromAuthToken) {
+        UserEntity user = getUserEntity(userIdFromAuthToken);
+
+        RecipeEntity recipe = getRecipeById(recipeId);
+
+        Set<RecipeEntity> bookmarkedRecipes = user.getBookmarkedRecipes();
+        Set<UserEntity> bookmarkedUsers = recipe.getBookmarks();
+
+        bookmarkedRecipes.remove(recipe);
+        user.setBookmarkedRecipes(bookmarkedRecipes);
+
+        bookmarkedUsers.remove(user);
+        recipe.setBookmarks(bookmarkedUsers);
+
+        userRepository.save(user);
+        recipeRepository.save(recipe);
+    }
+
+    private RecipeEntity getRecipeById(Long recipeId) {
+        return recipeRepository.findById(recipeId).orElseThrow(
+                () -> new NotFoundException("Recipe not found")
+        );
+    }
+
+    private UserEntity getUserEntity(Long userIdFromAuthToken) {
+        return userRepository.findById(userIdFromAuthToken).orElseThrow(
+                () -> new NotFoundException("UserNotFound")
+        );
     }
 }
 

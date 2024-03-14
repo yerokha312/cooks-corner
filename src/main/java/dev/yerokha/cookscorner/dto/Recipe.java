@@ -11,10 +11,10 @@ public record Recipe(
         int cookingTimeMinutes,
         String difficulty,
         String description,
-        Set<Ingredient> ingredients,
         int likes,
         int bookmarks,
         Boolean isLiked,
-        Boolean isBookmarked
+        Boolean isBookmarked,
+        Set<Ingredient> ingredients
 ) {
 }
