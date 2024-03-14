@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ public class RecipeService {
         this.ingredientRepository = ingredientRepository;
     }
 
+    @Transactional
     public void addRecipe(CreateRecipeRequest createRecipeRequest, Long userIdFromAuthToken, MultipartFile image) {
         RecipeEntity entity = new RecipeEntity();
         entity.setCreatedAt(LocalDateTime.now());

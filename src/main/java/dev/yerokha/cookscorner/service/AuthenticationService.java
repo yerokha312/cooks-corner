@@ -42,6 +42,7 @@ public class AuthenticationService {
     }
 
 
+    @Transactional
     public String createUser(RegistrationRequest request) {
         String email = request.email();
         if (!isEmailAvailable(email)) {
