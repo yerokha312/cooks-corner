@@ -1,5 +1,6 @@
 package dev.yerokha.cookscorner.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,15 +23,17 @@ public class RecipeIngredient {
 
     @ManyToOne
     @JoinColumn(name = "recipe_id")
-    private Recipe recipe;
+    private RecipeEntity recipeEntity;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinColumn(name = "ingredient_id")
-    private Ingredient ingredient;
+    private IngredientEntity ingredientEntity;
 
     @Column(name = "amount")
     private double amount;
 
     @Column(name = "measure_unit")
     private String measureUnit;
+
+
 }

@@ -49,7 +49,7 @@ public class UserEntity implements UserDetails {
     private String password;
 
     @OneToMany(mappedBy = "userEntity")
-    private Set<Recipe> recipes = new HashSet<>();
+    private Set<RecipeEntity> recipeEntities = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -66,6 +66,12 @@ public class UserEntity implements UserDetails {
             inverseJoinColumns = {@JoinColumn(name = "follower_id")}
     )
     private Set<UserEntity> followers = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "bookmarks")
+    private Set<RecipeEntity> bookmarkedRecipes = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "likes")
+    private Set<RecipeEntity> likedRecipes = new HashSet<>();
 
     @Column(name = "registered_at")
     private LocalDateTime registeredAt;
@@ -138,7 +144,7 @@ public class UserEntity implements UserDetails {
                 ", profilePicture=" + profilePicture +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", recipes=" + recipes.size() +
+                ", recipeEntities=" + recipeEntities.size() +
                 ", following=" + following.size() +
                 ", followers=" + followers.size() +
                 ", registeredAt=" + registeredAt +

@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "ingredient")
-public class Ingredient {
+public class IngredientEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,4 +20,11 @@ public class Ingredient {
 
     @Column(name = "name")
     private String ingredientName;
+
+    public IngredientEntity() {
+    }
+
+    public IngredientEntity(String ingredientName) {
+        this.ingredientName = ingredientName;
+    }
 }
