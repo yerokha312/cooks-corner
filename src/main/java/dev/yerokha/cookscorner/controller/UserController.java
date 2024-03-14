@@ -142,12 +142,9 @@ public class UserController {
     @Operation(
             summary = "User search", description = "Search for cooks by \"query\" param in name or bio." +
             "query is not required, else method returns most popular cooks",
-            tags = {"user", "put"},
+            tags = {"user", "get"},
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Update success"),
-                    @ApiResponse(responseCode = "400", description = "Invalid input or file is not an image", content = @Content),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-                    @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+                    @ApiResponse(responseCode = "200", description = "Search success"),
             },
             parameters = {
                     @Parameter(name = "query", description = "Parameter to search by",

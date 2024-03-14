@@ -6,6 +6,12 @@ import dev.yerokha.cookscorner.dto.CreateRecipeRequest;
 import dev.yerokha.cookscorner.dto.Recipe;
 import dev.yerokha.cookscorner.dto.RecipeDto;
 import dev.yerokha.cookscorner.service.RecipeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static dev.yerokha.cookscorner.service.TokenService.getUserIdFromAuthToken;
-
+@Tag(name = "Recipe", description = "Endpoints for recipe interaction")
 @RestController
 @RequestMapping("/v1/recipes")
 public class RecipeController {
@@ -41,7 +47,16 @@ public class RecipeController {
         this.objectMapper = objectMapper;
         this.validator = validator;
     }
-
+    @Operation(
+            summary = "Add recipe", description = "EP for creating a new recipe. Form-data request body is required",
+            tags = {"recipe", "post"},
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Recipe created successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+                    @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+            }
+    )
     @PostMapping
     public ResponseEntity<String> createRecipe(@RequestPart String dto,
                                                @RequestPart MultipartFile image,
@@ -65,7 +80,7 @@ public class RecipeController {
 
         recipeService.addRecipe(createRecipeRequest, getUserIdFromAuthToken(authentication), image);
 
-        return ResponseEntity.ok("CreateRecipeRequest created successfully");
+        return new ResponseEntity<>("CreateRecipeRequest created successfully", HttpStatus.CREATED);
     }
 
     private void validateRequest(CreateRecipeRequest createRecipeRequest) {
@@ -77,6 +92,24 @@ public class RecipeController {
         }
     }
 
+    @Operation(
+            summary = "Query recipes", description = "EP for querying recipes by \"query\" parameter. " +
+            "Query parameter is optional",
+            tags = {"recipe", "get"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Query success"),
+            },
+            parameters = {
+                    @Parameter(name = "query", description = "Parameter to search by",
+                            examples = {
+                                    @ExampleObject(name = "pasta", value = "pasta"),
+                                    @ExampleObject(name = "My", value = "my"),
+                                    @ExampleObject(name = "Soups", value = "soups"),
+                            }),
+                    @Parameter(name = "page", description = "Page number", example = "0"),
+                    @Parameter(name = "size", description = "Page size", example = "12")
+            }
+    )
     @GetMapping
     public ResponseEntity<Page<RecipeDto>> getRecipes(@RequestParam Map<String, String> params, Authentication authentication) {
         Long userIdFromAuthToken = null;
@@ -93,6 +126,15 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.getRecipes(params, userIdFromAuthToken));
     }
 
+    @Operation(
+            summary = "Get recipe", description = "Retrieve a recipe. If user is authenticated isLiked equals " +
+            "true or false, if not authenticated - null",
+            tags = {"recipe", "get"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Recipe details"),
+                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
+            }
+    )
     @GetMapping("/{recipeId}")
     public ResponseEntity<Recipe> getRecipeById(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
@@ -104,6 +146,14 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.getRecipeById(recipeId, userIdFromAuthToken));
     }
 
+    @Operation(
+            summary = "Like recipe", description = "Authenticated user likes recipe by it's id",
+            tags = {"recipe", "put"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Recipe liked"),
+                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
+            }
+    )
     @PutMapping("/{recipeId}/like")
     public ResponseEntity<String> likeRecipe(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
@@ -117,6 +167,14 @@ public class RecipeController {
         return ResponseEntity.ok("Recipe liked successfully");
     }
 
+    @Operation(
+            summary = "Dislike recipe", description = "Authenticated user removes like from the recipe",
+            tags = {"recipe", "put"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Recipe disliked"),
+                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
+            }
+    )
     @PutMapping("/{recipeId}/dislike")
     public ResponseEntity<String> dislikeRecipe(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
@@ -130,6 +188,14 @@ public class RecipeController {
         return ResponseEntity.ok("Recipe disliked successfully");
     }
 
+    @Operation(
+            summary = "Bookmark recipe", description = "Authenticated user saves recipe to bookmarks",
+            tags = {"recipe", "put"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Recipe saved"),
+                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
+            }
+    )
     @PutMapping("/{recipeId}/bookmark")
     public ResponseEntity<String> bookmarkRecipe(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
@@ -143,6 +209,14 @@ public class RecipeController {
         return ResponseEntity.ok("Recipe bookmarked successfully");
     }
 
+    @Operation(
+            summary = "Remove bookmark", description = "Authenticated user removes bookmark from the recipe",
+            tags = {"recipe", "put"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Recipe removed from bookmarks"),
+                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
+            }
+    )
     @PutMapping("/{recipeId}/remove-bookmark")
     public ResponseEntity<String> removeBookmarkRecipe(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
