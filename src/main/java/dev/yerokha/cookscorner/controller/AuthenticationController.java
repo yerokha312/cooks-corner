@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,7 +59,7 @@ public class AuthenticationController {
             }
     )
     @PostMapping("/email-available")
-    public ResponseEntity<Boolean> checkAvailable(@RequestBody String email) {
+    public ResponseEntity<Boolean> checkAvailable(@RequestBody @Valid @Email String email) {
         boolean emailAvailable = authenticationService.isEmailAvailable(email);
         return ResponseEntity.ok(emailAvailable);
     }
@@ -73,9 +74,10 @@ public class AuthenticationController {
             }
     )
     @PostMapping("/resend-confirmation")
-    public ResponseEntity<String> resend(@RequestBody SendEmailRequest request) {
+    public ResponseEntity<String> resend(@RequestBody @Valid SendEmailRequest request) {
         authenticationService.sendConfirmationEmail(request.url(), request.email());
-        return new ResponseEntity<>("Confirmation link generated, email sent", HttpStatus.OK);
+        return new ResponseEntity<>(String.format(
+                "Confirmation link generated, email sent to %s", request.email()), HttpStatus.OK);
     }
 
     @Operation(
@@ -146,9 +148,10 @@ public class AuthenticationController {
             }
     )
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> findUser(@RequestBody SendEmailRequest request) {
+    public ResponseEntity<String> findUser(@RequestBody @Valid SendEmailRequest request) {
         authenticationService.sendResetPasswordEmail(request.email(), request.url());
-        return ResponseEntity.ok("Confirmation link generated, email sent");
+        return ResponseEntity.ok(String.format(
+                "Confirmation link generated, email sent to %s", request.email()));
     }
 
     @Operation(

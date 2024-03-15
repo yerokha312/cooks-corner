@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.yerokha.cookscorner.dto.UpdateProfileRequest;
 import dev.yerokha.cookscorner.dto.UpdateProfileResponse;
 import dev.yerokha.cookscorner.dto.User;
-import dev.yerokha.cookscorner.dto.UserSearchResponse;
+import dev.yerokha.cookscorner.dto.UserDto;
 import dev.yerokha.cookscorner.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -156,7 +156,7 @@ public class UserController {
             }
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<UserSearchResponse>> search(@RequestParam Map<String, String> params) {
+    public ResponseEntity<Page<UserDto>> search(@RequestParam Map<String, String> params) {
         return ResponseEntity.ok(userService.search(params));
     }
 

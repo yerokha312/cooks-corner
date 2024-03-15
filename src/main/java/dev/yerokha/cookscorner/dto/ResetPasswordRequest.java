@@ -6,6 +6,6 @@ import jakarta.validation.constraints.Pattern;
 
 public record ResetPasswordRequest(
         @NotEmpty @NotNull
-        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-={}:;.,<>/?]).{8,15}$")
+        @Pattern(regexp = "^(?!.*\\s)(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-={}:;.,<>/?]).{8,}$")
         String password) {
 }
