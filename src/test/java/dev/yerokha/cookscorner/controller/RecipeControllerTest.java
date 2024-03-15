@@ -23,8 +23,15 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import static dev.yerokha.cookscorner.controller.AuthenticationControllerTest.extractToken;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -45,10 +52,13 @@ class RecipeControllerTest {
     private static String accessToken;
     final String APP_JSON = "application/json";
 
+    private static final String EMAIL = "existing@example.com";
+    private static final String PASSWORD = "P@ssw0rd";
+
     @Test
     @Order(1)
     void createRecipe() throws Exception {
-        login();
+        login(EMAIL, PASSWORD);
 
         CreateRecipeRequest recipe = new CreateRecipeRequest(
                 "Spaghetti Carbonara",
@@ -68,9 +78,8 @@ class RecipeControllerTest {
         MockMultipartFile image = new MockMultipartFile(
                 "image", "image.jpg", "image/jpeg", "image data".getBytes());
 
-        String json = objectMapper.writeValueAsString(recipe);
         byte[] recipeBytes = objectMapper.writeValueAsBytes(recipe);
-        MockPart recipePart = new MockPart("dto",recipeBytes);
+        MockPart recipePart = new MockPart("dto", recipeBytes);
 
         mockMvc.perform(multipart("/v1/recipes")
                         .part(recipePart)
@@ -80,33 +89,162 @@ class RecipeControllerTest {
     }
 
     @Test
-    void getRecipes() {
+    @Order(2)
+    void createRecipe_NotAuthorized() throws Exception {
+        CreateRecipeRequest recipe = new CreateRecipeRequest(
+                "Spaghetti Carbonara",
+                20,
+                "MEDIUM",
+                "A classic Italian pasta dish made with eggs, cheese, pancetta, and black pepper.",
+                "main dishes",
+                new HashSet<>(Arrays.asList(
+                        new Ingredient("spaghetti", 200, "gram"),
+                        new Ingredient("pancetta", 100, "gram"),
+                        new Ingredient("parmesan cheese", 50, "gram"),
+                        new Ingredient("eggs", 2, "pieces"),
+                        new Ingredient("black pepper", 0, "to taste")
+                ))
+        );
+
+        MockMultipartFile image = new MockMultipartFile(
+                "image", "image.jpg", "image/jpeg", "image data".getBytes());
+
+        byte[] recipeBytes = objectMapper.writeValueAsBytes(recipe);
+        MockPart recipePart = new MockPart("dto", recipeBytes);
+
+        mockMvc.perform(multipart("/v1/recipes")
+                        .part(recipePart)
+                        .file(image))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void getRecipeById() {
+    @Order(3)
+    void getRecipes_NotAuthorized() throws Exception {
+        mockMvc.perform(get("/v1/recipes")
+                        .param("query", "category:main dishes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].isLiked").value(nullValue()));
     }
 
     @Test
-    void likeRecipe() {
+    @Order(4)
+    void getRecipes_Authorized() throws Exception {
+        mockMvc.perform(get("/v1/recipes")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .param("query", "category:main dishes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].isLiked").value(false));
     }
 
     @Test
-    void dislikeRecipe() {
+    @Order(5)
+    void getRecipeById() throws Exception {
+        mockMvc.perform(get("/v1/recipes/1"))
+                .andExpect(content().string(containsString("classic")));
     }
 
     @Test
-    void bookmarkRecipe() {
+    @Order(5)
+    void getRecipeById_Authorized() throws Exception {
+        mockMvc.perform(get("/v1/recipes/1")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(content().string(containsString("classic")))
+                .andExpect(jsonPath("$.isBookmarked").value(false));
     }
 
     @Test
-    void removeBookmarkRecipe() {
+    @Order(6)
+    void likeRecipe() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(put("/v1/recipes/1/like")
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("Recipe liked successfully"));
+        }
     }
 
-    private void login() throws Exception {
+    @Test
+    @Order(7)
+    void getRecipeById_Authorized_Liked() throws Exception {
+        mockMvc.perform(get("/v1/recipes/1")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(content().string(containsString("classic")))
+                .andExpect(jsonPath("$.likes").value(1))
+                .andExpect(jsonPath("$.isLiked").value(true));
+    }
+
+    @Test
+    @Order(8)
+    void dislikeRecipe() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(put("/v1/recipes/1/dislike")
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("Recipe disliked successfully"));
+        }
+    }
+
+    @Test
+    @Order(9)
+    void getRecipeById_Authorized_Disliked() throws Exception {
+        mockMvc.perform(get("/v1/recipes/1")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(content().string(containsString("classic")))
+                .andExpect(jsonPath("$.likes").value(0))
+                .andExpect(jsonPath("$.isLiked").value(false));
+    }
+
+    @Test
+    @Order(10)
+    void bookmarkRecipe() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(put("/v1/recipes/1/bookmark")
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("Recipe bookmarked successfully"));
+        }
+    }
+
+    @Test
+    @Order(10)
+    void getRecipeById_Authorized_Bookmarked() throws Exception {
+        mockMvc.perform(get("/v1/recipes/1")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(content().string(containsString("classic")))
+                .andExpect(jsonPath("$.bookmarks").value(1))
+                .andExpect(jsonPath("$.isBookmarked").value(true));
+    }
+
+    @Test
+    @Order(11)
+    void removeBookmarkRecipe() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(put("/v1/recipes/1/remove-bookmark")
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("Bookmark removed successfully"));
+        }
+    }
+
+    @Test
+    @Order(12)
+    void getRecipeById_Authorized_Bookmark_Removed() throws Exception {
+        mockMvc.perform(get("/v1/recipes/1")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(content().string(containsString("classic")))
+                .andExpect(jsonPath("$.bookmarks").value(0))
+                .andExpect(jsonPath("$.isBookmarked").value(false));
+    }
+
+    private void login(String email, String password) throws Exception {
         LoginRequest request = new LoginRequest(
-                "existing@example.com",
-                "P@ssw0rd"
+                email,
+                password
         );
 
         String json = objectMapper.writeValueAsString(request);

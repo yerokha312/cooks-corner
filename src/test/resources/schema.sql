@@ -133,7 +133,6 @@ create table recipe
         check (recipe.difficulty in ('EASY', 'MEDIUM', 'HARD'))
 );
 
-
 create table recipe_bookmark_junction
 (
     recipe_id bigint not null,

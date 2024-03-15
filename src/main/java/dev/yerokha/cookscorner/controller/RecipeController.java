@@ -104,7 +104,7 @@ public class RecipeController {
                             examples = {
                                     @ExampleObject(name = "pasta", value = "pasta"),
                                     @ExampleObject(name = "My", value = "my"),
-                                    @ExampleObject(name = "Soups", value = "soups"),
+                                    @ExampleObject(name = "Soups", value = "category:soups"),
                             }),
                     @Parameter(name = "page", description = "Page number", example = "0"),
                     @Parameter(name = "size", description = "Page size", example = "12")

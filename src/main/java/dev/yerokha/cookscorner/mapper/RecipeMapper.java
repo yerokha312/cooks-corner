@@ -10,7 +10,7 @@ public class RecipeMapper {
                 entity.getRecipeId(),
                 entity.getTitle(),
                 entity.getUserEntity().getName(),
-                entity.getImage().getImageUrl(),
+                entity.getImage() == null ? null : entity.getImage().getImageUrl(),
                 entity.getLikes().size(),
                 entity.getBookmarks().size()
         );
