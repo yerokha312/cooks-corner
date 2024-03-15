@@ -2,7 +2,6 @@ package dev.yerokha.cookscorner.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -51,7 +50,7 @@ public class UserEntity implements UserDetails {
     @OneToMany(mappedBy = "userEntity")
     private Set<RecipeEntity> recipeEntities = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(
             name = "following",
             joinColumns = {@JoinColumn(name = "user_id")},
@@ -59,7 +58,7 @@ public class UserEntity implements UserDetails {
     )
     private Set<UserEntity> following = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(
             name = "followers",
             joinColumns = {@JoinColumn(name = "user_id")},
@@ -67,10 +66,10 @@ public class UserEntity implements UserDetails {
     )
     private Set<UserEntity> followers = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "bookmarks")
+    @ManyToMany(mappedBy = "bookmarks")
     private Set<RecipeEntity> bookmarkedRecipes = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "likes")
+    @ManyToMany(mappedBy = "likes")
     private Set<RecipeEntity> likedRecipes = new HashSet<>();
 
     @Column(name = "registered_at")
@@ -94,6 +93,7 @@ public class UserEntity implements UserDetails {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.registeredAt = LocalDateTime.now();
         this.authorities = authorities;
     }
 
@@ -101,9 +101,12 @@ public class UserEntity implements UserDetails {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.registeredAt = LocalDateTime.now();
         this.isEnabled = isEnabled;
         this.authorities = authorities;
     }
+
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -144,9 +147,9 @@ public class UserEntity implements UserDetails {
                 ", profilePicture=" + profilePicture +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", recipeEntities=" + recipeEntities.size() +
-                ", following=" + following.size() +
-                ", followers=" + followers.size() +
+//                ", recipeEntities=" + recipeEntities.size() +
+//                ", following=" + following.size() +
+//                ", followers=" + followers.size() +
                 ", registeredAt=" + registeredAt +
                 ", isEnabled=" + isEnabled +
                 ", authorities=" + authorities +
@@ -158,12 +161,15 @@ public class UserEntity implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserEntity that = (UserEntity) o;
-        return isEnabled == that.isEnabled && Objects.equals(userId, that.userId) && Objects.equals(name, that.name) && Objects.equals(bio, that.bio) && Objects.equals(profilePicture, that.profilePicture) && Objects.equals(email, that.email) && Objects.equals(registeredAt, that.registeredAt) && Objects.equals(authorities, that.authorities);
+        return
+                Objects.equals(userId, that.userId) &&
+                        Objects.equals(email, that.email) &&
+                        Objects.equals(registeredAt, that.registeredAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, name, bio, profilePicture, email, registeredAt, isEnabled, authorities);
+        return Objects.hash(userId, email, registeredAt);
     }
 }
 

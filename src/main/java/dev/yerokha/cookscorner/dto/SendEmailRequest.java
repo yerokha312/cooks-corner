@@ -1,4 +1,10 @@
 package dev.yerokha.cookscorner.dto;
 
-public record SendEmailRequest(String email, String url) {
+import jakarta.validation.constraints.Email;
+
+public record SendEmailRequest(
+        @Email
+        String email,
+        String url
+) {
 }

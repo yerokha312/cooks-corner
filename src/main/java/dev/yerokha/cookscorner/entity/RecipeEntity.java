@@ -6,7 +6,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -63,7 +62,7 @@ public class RecipeEntity {
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(
             name = "recipe_like_junction",
             joinColumns = @JoinColumn(name = "recipe_id"),
@@ -71,7 +70,7 @@ public class RecipeEntity {
     )
     private Set<UserEntity> likes;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(
             name = "recipe_bookmark_junction",
             joinColumns = @JoinColumn(name = "recipe_id"),
