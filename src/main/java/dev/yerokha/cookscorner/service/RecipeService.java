@@ -289,6 +289,18 @@ public class RecipeService {
                 () -> new NotFoundException("UserNotFound")
         );
     }
+
+    public Page<RecipeDto> getUserRecipes(Long userId, Long userIdFromAuthToken, Map<String, String> params) {
+        Pageable pageable = PageRequest.of(
+                parseInt(params.getOrDefault("page", "0")),
+                parseInt(params.getOrDefault("size", "12")));
+        return recipeRepository.findByUserEntityUserId(userId, pageable).map(recipeEntity -> {
+            Boolean isLiked = checkLiked(recipeEntity.getRecipeId(), userIdFromAuthToken);
+            Boolean isBookmarked = checkBookmarked(recipeEntity.getRecipeId(), userIdFromAuthToken);
+            return getRecipeDto(recipeEntity, isLiked, isBookmarked);
+        });
+
+    }
 }
 
 

@@ -111,7 +111,7 @@ public class RecipeController {
             }
     )
     @GetMapping
-    public ResponseEntity<Page<RecipeDto>> getRecipes(@RequestParam Map<String, String> params, Authentication authentication) {
+    public ResponseEntity<Page<RecipeDto>> getRecipes(@RequestParam(required = false) Map<String, String> params, Authentication authentication) {
         Long userIdFromAuthToken = null;
         if (authentication != null) {
             userIdFromAuthToken = getUserIdFromAuthToken(authentication);
@@ -154,7 +154,7 @@ public class RecipeController {
                     @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
             }
     )
-    @PutMapping("/{recipeId}/like")
+    @PutMapping("/like/{recipeId}")
     public ResponseEntity<String> likeRecipe(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
 
@@ -175,7 +175,7 @@ public class RecipeController {
                     @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
             }
     )
-    @PutMapping("/{recipeId}/dislike")
+    @PutMapping("/dislike/{recipeId}")
     public ResponseEntity<String> dislikeRecipe(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
 
@@ -196,7 +196,7 @@ public class RecipeController {
                     @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
             }
     )
-    @PutMapping("/{recipeId}/bookmark")
+    @PutMapping("/bookmark/{recipeId}")
     public ResponseEntity<String> bookmarkRecipe(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
 
@@ -217,7 +217,7 @@ public class RecipeController {
                     @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
             }
     )
-    @PutMapping("/{recipeId}/remove-bookmark")
+    @PutMapping("/remove-bookmark/{recipeId}")
     public ResponseEntity<String> removeBookmarkRecipe(Authentication authentication, @PathVariable Long recipeId) {
         Long userIdFromAuthToken = null;
 

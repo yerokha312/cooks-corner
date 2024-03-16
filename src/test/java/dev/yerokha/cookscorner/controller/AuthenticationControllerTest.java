@@ -47,7 +47,7 @@ class AuthenticationControllerTest {
     private static String confirmationUrl;
     private static String resetPasswordUrl;
     private static String initialAccessToken;
-    private static String accessToken;
+    public static String accessToken;
     private static String refreshToken;
 
     @Test
@@ -247,12 +247,13 @@ class AuthenticationControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String newToken = result.getResponse().getContentAsString();
+        String newAccessToken = extractToken(result.getResponse().getContentAsString(),
+                "accessToken");
 
-        Assertions.assertNotEquals(accessToken, newToken,
+        Assertions.assertNotEquals(accessToken, newAccessToken,
                 "New access token should be different from the initial one");
 
-        accessToken = newToken;
+        accessToken = newAccessToken;
     }
 
     @Test

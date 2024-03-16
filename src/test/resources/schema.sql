@@ -34,6 +34,7 @@ create table image
     primary key (image_id)
 );
 
+
 create table users
 (
     user_id       identity,
@@ -132,7 +133,6 @@ create table recipe
     constraint recipe_difficulty_check
         check (recipe.difficulty in ('EASY', 'MEDIUM', 'HARD'))
 );
-
 create table recipe_bookmark_junction
 (
     recipe_id bigint not null,

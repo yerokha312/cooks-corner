@@ -1,4 +1,8 @@
 package dev.yerokha.cookscorner.dto;
 
-public record LoginResponse(String accessToken, String refreshToken) {
+public record LoginResponse(
+        String accessToken,
+        String refreshToken,
+        Long userId
+) {
 }
