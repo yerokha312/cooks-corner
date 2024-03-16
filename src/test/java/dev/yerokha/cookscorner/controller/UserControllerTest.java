@@ -181,6 +181,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.following").value(0));
     }
     @Test
+    @Order(12)
     void search() throws Exception {
         mockMvc.perform(get("/v1/users/search")
                 .param("query", "first"))
@@ -190,6 +191,7 @@ class UserControllerTest {
     }
 
     @Test
+    @Order(13)
     void showUserRecipes() throws Exception {
         mockMvc.perform(get("/v1/users/recipes/2")
                 .header("Authorization", "Bearer " + accessToken))
@@ -200,4 +202,34 @@ class UserControllerTest {
 
     }
 
+    @Test
+    @Order(14)
+    void follow_Order_13() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(post("/v1/users/follow/2")
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("You followed the user"));
+        }
+    }
+
+    @Test
+    @Order(15)
+    void showFollowers() throws Exception {
+        mockMvc.perform(get("/v1/users/2/followers"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].name").value("The First Test User"));
+    }
+
+    @Test
+    @Order(16)
+    void showFollowing() throws Exception {
+        mockMvc.perform(get("/v1/users/1/following"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].name").value("Second User"));
+    }
 }

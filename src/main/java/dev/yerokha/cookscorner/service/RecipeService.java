@@ -112,7 +112,6 @@ public class RecipeService {
                 parseInt(params.getOrDefault("page", "0")),
                 parseInt(params.getOrDefault("size", "12")),
                 Sort.by(Sort.Direction.DESC, "viewCount"));
-
         String query = params.get("query");
 
         if (query == null || query.isEmpty()) {

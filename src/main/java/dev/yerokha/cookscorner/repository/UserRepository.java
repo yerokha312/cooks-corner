@@ -27,4 +27,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Boolean existsByUserIdAndLikedRecipes_RecipeId(Long userIdFromAuthToken, Long recipeId);
     Boolean existsByUserIdAndBookmarkedRecipes_RecipeId(Long userIdFromAuthToken, Long recipeId);
+
+    Page<UserEntity> findByFollowingUserId(Long userId, Pageable pageable);
+    Page<UserEntity> findByFollowersUserId(Long userId, Pageable pageable);
 }

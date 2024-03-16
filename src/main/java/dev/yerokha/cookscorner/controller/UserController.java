@@ -187,4 +187,38 @@ public class UserController {
         return ResponseEntity.ok(recipeService.getUserRecipes(userId, userIdFromAuthToken, params));
     }
 
+    @Operation(
+            summary = "Followers", description = "Get paged list of followers",
+            tags = {"user", "get"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Request success"),
+            },
+            parameters = {
+                    @Parameter(name = "page", description = "Page number", example = "0"),
+                    @Parameter(name = "size", description = "Page size", example = "12")
+            }
+    )
+    @GetMapping("/{userId}/followers")
+    public ResponseEntity<Page<UserDto>> showFollowers(@PathVariable Long userId,
+                                                       @RequestParam(required = false) Map<String, String> params) {
+        return ResponseEntity.ok(userService.getFollowers(userId, params));
+    }
+
+    @Operation(
+            summary = "Following", description = "Get user's paged list of following",
+            tags = {"user", "get"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Request success"),
+            },
+            parameters = {
+                    @Parameter(name = "page", description = "Page number", example = "0"),
+                    @Parameter(name = "size", description = "Page size", example = "12")
+            }
+    )
+    @GetMapping("/{userId}/following")
+    public ResponseEntity<Page<UserDto>> showFollowing(@PathVariable Long userId,
+                                                       @RequestParam(required = false) Map<String, String> params) {
+        return ResponseEntity.ok(userService.getFollowing(userId, params));
+    }
+
 }
