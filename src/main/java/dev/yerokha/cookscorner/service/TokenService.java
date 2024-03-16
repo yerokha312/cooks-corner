@@ -1,5 +1,6 @@
 package dev.yerokha.cookscorner.service;
 
+import dev.yerokha.cookscorner.dto.LoginResponse;
 import dev.yerokha.cookscorner.entity.RefreshToken;
 import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.enums.TokenType;
@@ -139,7 +140,7 @@ public class TokenService {
         return jwt.getClaim("userId");
     }
 
-    public String refreshAccessToken(String refreshToken) {
+    public LoginResponse refreshAccessToken(String refreshToken) {
         Jwt decodedToken = decodeToken(refreshToken);
         String email = decodedToken.getSubject();
         if (!decodedToken.getClaim("tokenType").equals(TokenType.REFRESH.name())) {
@@ -162,7 +163,11 @@ public class TokenService {
         String token = encodeToken(claims);
         String key = "access_token:" + email;
         setValue(key, encryptToken(token), ACCESS_TOKEN_EXPIRATION, TimeUnit.MINUTES);
-        return token;
+        return new LoginResponse(
+                token,
+                refreshToken,
+                userId
+                );
 
     }
 

@@ -2,10 +2,12 @@ package dev.yerokha.cookscorner.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.yerokha.cookscorner.dto.RecipeDto;
 import dev.yerokha.cookscorner.dto.UpdateProfileRequest;
 import dev.yerokha.cookscorner.dto.UpdateProfileResponse;
 import dev.yerokha.cookscorner.dto.User;
 import dev.yerokha.cookscorner.dto.UserDto;
+import dev.yerokha.cookscorner.service.RecipeService;
 import dev.yerokha.cookscorner.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,12 +42,14 @@ import static dev.yerokha.cookscorner.service.TokenService.getUserIdFromAuthToke
 public class UserController {
 
     private final UserService userService;
+    private final RecipeService recipeService;
     private final ObjectMapper objectMapper;
     private final Validator validator;
 
 
-    public UserController(UserService userService, ObjectMapper objectMapper, Validator validator) {
+    public UserController(UserService userService, RecipeService recipeService, ObjectMapper objectMapper, Validator validator) {
         this.userService = userService;
+        this.recipeService = recipeService;
         this.objectMapper = objectMapper;
         this.validator = validator;
     }
@@ -77,7 +81,7 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
             }
     )
-    @PostMapping("/{userId}/follow")
+    @PostMapping("/follow/{userId}")
     public ResponseEntity<String> follow(@PathVariable Long userId, Authentication authentication) {
         userService.follow(userId, getUserIdFromAuthToken(authentication));
         return ResponseEntity.ok("You followed the user");
@@ -91,7 +95,7 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
             }
     )
-    @PostMapping("/{userId}/unfollow")
+    @PostMapping("/unfollow/{userId}")
     public ResponseEntity<String> unfollow(@PathVariable Long userId, Authentication authentication) {
         userService.unfollow(userId, getUserIdFromAuthToken(authentication));
         return ResponseEntity.ok("You unfollowed the user");
@@ -156,8 +160,31 @@ public class UserController {
             }
     )
     @GetMapping("/search")
-    public ResponseEntity<Page<UserDto>> search(@RequestParam Map<String, String> params) {
+    public ResponseEntity<Page<UserDto>> search(@RequestParam(required = false) Map<String, String> params) {
         return ResponseEntity.ok(userService.search(params));
+    }
+
+    @Operation(
+            summary = "User search", description = "Search for cooks by \"query\" param in name or bio." +
+            "query is not required, else method returns most popular cooks",
+            tags = {"user", "get"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Search success"),
+            },
+            parameters = {
+                    @Parameter(name = "page", description = "Page number", example = "0"),
+                    @Parameter(name = "size", description = "Page size", example = "12")
+            }
+    )
+    @GetMapping("/recipes/{userId}")
+    public ResponseEntity<Page<RecipeDto>> showUserRecipes(@RequestParam(required = false) Map<String, String> params,
+                                                           @PathVariable Long userId,
+                                                           Authentication authentication) {
+        Long userIdFromAuthToken = null;
+        if (authentication != null) {
+            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
+        }
+        return ResponseEntity.ok(recipeService.getUserRecipes(userId, userIdFromAuthToken, params));
     }
 
 }

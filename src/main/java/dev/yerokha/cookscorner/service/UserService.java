@@ -156,5 +156,6 @@ public class UserService implements UserDetailsService {
                         entity.getProfilePicture().getImageUrl()
                 ));
     }
+
 }
 

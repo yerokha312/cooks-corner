@@ -85,7 +85,8 @@ public class AuthenticationService {
             UserEntity entity = (UserEntity) authentication.getPrincipal();
             return new LoginResponse(
                     tokenService.generateAccessToken(entity),
-                    tokenService.generateRefreshToken(entity)
+                    tokenService.generateRefreshToken(entity),
+                    entity.getUserId()
             );
 
         } catch (AuthenticationException e) {
@@ -97,7 +98,7 @@ public class AuthenticationService {
         }
     }
 
-    public String refreshToken(String refreshToken) {
+    public LoginResponse refreshToken(String refreshToken) {
         return tokenService.refreshAccessToken(refreshToken);
     }
 

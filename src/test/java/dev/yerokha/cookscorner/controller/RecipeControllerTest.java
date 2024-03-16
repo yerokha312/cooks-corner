@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import static dev.yerokha.cookscorner.controller.AuthenticationControllerTest.accessToken;
 import static dev.yerokha.cookscorner.controller.AuthenticationControllerTest.extractToken;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
@@ -49,7 +50,7 @@ class RecipeControllerTest {
     @MockBean
     ImageService imageService;
 
-    private static String accessToken;
+//    private static String accessToken;
     final String APP_JSON = "application/json";
 
     private static final String EMAIL = "existing@example.com";
@@ -144,14 +145,14 @@ class RecipeControllerTest {
     @Test
     @Order(5)
     void getRecipeById() throws Exception {
-        mockMvc.perform(get("/v1/recipes/1"))
+        mockMvc.perform(get("/v1/recipes/2"))
                 .andExpect(content().string(containsString("classic")));
     }
 
     @Test
     @Order(5)
     void getRecipeById_Authorized() throws Exception {
-        mockMvc.perform(get("/v1/recipes/1")
+        mockMvc.perform(get("/v1/recipes/2")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(content().string(containsString("classic")))
                 .andExpect(jsonPath("$.isBookmarked").value(false));
@@ -161,7 +162,7 @@ class RecipeControllerTest {
     @Order(6)
     void likeRecipe() throws Exception {
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/v1/recipes/1/like")
+            mockMvc.perform(put("/v1/recipes/like/2")
                             .header("Authorization", "Bearer " + accessToken))
                     .andExpect(status().isOk())
                     .andExpect(content().string("Recipe liked successfully"));
@@ -171,7 +172,7 @@ class RecipeControllerTest {
     @Test
     @Order(7)
     void getRecipeById_Authorized_Liked() throws Exception {
-        mockMvc.perform(get("/v1/recipes/1")
+        mockMvc.perform(get("/v1/recipes/2")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(content().string(containsString("classic")))
                 .andExpect(jsonPath("$.likes").value(1))
@@ -182,7 +183,7 @@ class RecipeControllerTest {
     @Order(8)
     void dislikeRecipe() throws Exception {
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/v1/recipes/1/dislike")
+            mockMvc.perform(put("/v1/recipes/dislike/2")
                             .header("Authorization", "Bearer " + accessToken))
                     .andExpect(status().isOk())
                     .andExpect(content().string("Recipe disliked successfully"));
@@ -192,7 +193,7 @@ class RecipeControllerTest {
     @Test
     @Order(9)
     void getRecipeById_Authorized_Disliked() throws Exception {
-        mockMvc.perform(get("/v1/recipes/1")
+        mockMvc.perform(get("/v1/recipes/2")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(content().string(containsString("classic")))
                 .andExpect(jsonPath("$.likes").value(0))
@@ -203,7 +204,7 @@ class RecipeControllerTest {
     @Order(10)
     void bookmarkRecipe() throws Exception {
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/v1/recipes/1/bookmark")
+            mockMvc.perform(put("/v1/recipes/bookmark/2")
                             .header("Authorization", "Bearer " + accessToken))
                     .andExpect(status().isOk())
                     .andExpect(content().string("Recipe bookmarked successfully"));
@@ -213,7 +214,7 @@ class RecipeControllerTest {
     @Test
     @Order(10)
     void getRecipeById_Authorized_Bookmarked() throws Exception {
-        mockMvc.perform(get("/v1/recipes/1")
+        mockMvc.perform(get("/v1/recipes/2")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(content().string(containsString("classic")))
                 .andExpect(jsonPath("$.bookmarks").value(1))
@@ -224,7 +225,7 @@ class RecipeControllerTest {
     @Order(11)
     void removeBookmarkRecipe() throws Exception {
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/v1/recipes/1/remove-bookmark")
+            mockMvc.perform(put("/v1/recipes/remove-bookmark/2")
                             .header("Authorization", "Bearer " + accessToken))
                     .andExpect(status().isOk())
                     .andExpect(content().string("Bookmark removed successfully"));
@@ -234,14 +235,14 @@ class RecipeControllerTest {
     @Test
     @Order(12)
     void getRecipeById_Authorized_Bookmark_Removed() throws Exception {
-        mockMvc.perform(get("/v1/recipes/1")
+        mockMvc.perform(get("/v1/recipes/2")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(content().string(containsString("classic")))
                 .andExpect(jsonPath("$.bookmarks").value(0))
                 .andExpect(jsonPath("$.isBookmarked").value(false));
     }
 
-    private void login(String email, String password) throws Exception {
+    public void login(String email, String password) throws Exception {
         LoginRequest request = new LoginRequest(
                 email,
                 password
