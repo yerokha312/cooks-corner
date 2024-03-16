@@ -80,7 +80,7 @@ public class RecipeController {
 
         recipeService.addRecipe(createRecipeRequest, getUserIdFromAuthToken(authentication), image);
 
-        return new ResponseEntity<>("CreateRecipeRequest created successfully", HttpStatus.CREATED);
+        return new ResponseEntity<>("Recipe created successfully", HttpStatus.CREATED);
     }
 
     private void validateRequest(CreateRecipeRequest createRecipeRequest) {
