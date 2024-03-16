@@ -55,7 +55,7 @@ public class RecipeService {
         entity.setTitle(createRecipeRequest.title());
         entity.setImage(imageService.processImage(image));
         entity.setDescription(createRecipeRequest.description());
-        entity.setCategory(categoryRepository.findByCategoryName(createRecipeRequest.category()).orElseThrow(
+        entity.setCategory(categoryRepository.findByCategoryNameIgnoreCase(createRecipeRequest.category()).orElseThrow(
                 () -> new NotFoundException("Category not found")));
         Set<RecipeIngredient> recipeIngredients = new HashSet<>();
         for (Ingredient ingredient : createRecipeRequest.ingredients()) {
@@ -81,7 +81,7 @@ public class RecipeService {
 
     public Recipe getRecipeById(Long recipeId, Long userIdFromAuthToken) {
         RecipeEntity entity = recipeRepository.findById(recipeId).orElseThrow(
-                () -> new NotFoundException("CreateRecipeRequest not found"));
+                () -> new NotFoundException("Recipe not found"));
 
         Boolean isLiked = checkLiked(recipeId, userIdFromAuthToken);
         Boolean isBookmarked = checkBookmarked(recipeId, userIdFromAuthToken);
