@@ -139,23 +139,39 @@ public class UserService implements UserDetailsService {
     }
 
     public Page<UserDto> search(Map<String, String> params) {
-        Pageable pageable = PageRequest.of(
-                parseInt(params.getOrDefault("page", "0")),
-                parseInt(params.getOrDefault("size", "12")));
+        Pageable pageable = getPageable(params);
         String query = params.get("query");
         if (query == null || query.isEmpty()) {
             return userRepository.findAllByOrderByFollowersDesc(pageable)
-                    .map(entity -> new UserDto(
-                            entity.getUserId(), entity.getName(), entity.getProfilePicture() == null ? null :
-                            entity.getProfilePicture().getImageUrl()
-                    ));
+                    .map(this::toDto);
         }
         return userRepository.findByNameContainingIgnoreCaseOrBioContainingIgnoreCase(query, query, pageable)
-                .map(entity -> new UserDto(
-                        entity.getUserId(), entity.getName(), entity.getProfilePicture() == null ? null :
-                        entity.getProfilePicture().getImageUrl()
-                ));
+                .map(this::toDto);
     }
 
+    public Page<UserDto> getFollowers(Long userId, Map<String, String> params) {
+        Pageable pageable = getPageable(params);
+        return userRepository.findByFollowingUserId(userId, pageable)
+                .map(this::toDto);
+    }
+
+    public Page<UserDto> getFollowing(Long userId, Map<String, String> params) {
+        Pageable pageable = getPageable(params);
+        return userRepository.findByFollowersUserId(userId, pageable)
+                .map(this::toDto);
+    }
+
+    private Pageable getPageable(Map<String, String> params) {
+        return PageRequest.of(
+                parseInt(params.getOrDefault("page", "0")),
+                parseInt(params.getOrDefault("size", "12")));
+    }
+
+    private UserDto toDto(UserEntity entity) {
+        return new UserDto(
+                entity.getUserId(), entity.getName(), entity.getProfilePicture() == null ? null :
+                entity.getProfilePicture().getImageUrl()
+        );
+    }
 }
 
