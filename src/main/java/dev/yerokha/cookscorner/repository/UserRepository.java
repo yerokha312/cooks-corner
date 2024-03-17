@@ -30,4 +30,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Page<UserEntity> findByFollowingUserId(Long userId, Pageable pageable);
     Page<UserEntity> findByFollowersUserId(Long userId, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE UserEntity u SET u.viewCount = u.viewCount + 1 WHERE u.userId = :userId")
+    void incrementViewCount(Long userId);
+
+    @Query("SELECT u.viewCount FROM UserEntity u WHERE u.userId = :userId")
+    long getViewCount(Long userId);
 }

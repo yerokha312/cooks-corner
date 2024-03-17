@@ -1,9 +1,11 @@
 package dev.yerokha.cookscorner.dto;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 public record Recipe(
         Long recipeId,
+        LocalDateTime lastUpdated,
         String title,
         String author,
         Long authorId,

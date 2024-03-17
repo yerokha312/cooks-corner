@@ -4,7 +4,7 @@ public record User(
         Long userId,
         String name,
         String bio,
-        String photoUrl,
+        String imageUrl,
         int recipes,
         int followers,
         int following,

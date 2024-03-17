@@ -69,7 +69,9 @@ public class UserController {
         if (authentication != null) {
             userIdFromAuthToken = getUserIdFromAuthToken(authentication);
         }
-        return ResponseEntity.ok(userService.getUser(userId, userIdFromAuthToken));
+        User user = userService.getUser(userId, userIdFromAuthToken);
+        userService.incrementViewCount(userId);
+        return ResponseEntity.ok(user);
     }
 
     @Operation(

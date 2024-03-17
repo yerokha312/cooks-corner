@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
@@ -57,6 +58,7 @@ public class RecipeController {
                     @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
             }
     )
+    @Schema(implementation = CreateRecipeRequest.class)
     @PostMapping
     public ResponseEntity<String> createRecipe(@RequestPart String dto,
                                                @RequestPart MultipartFile image,
@@ -143,7 +145,10 @@ public class RecipeController {
             userIdFromAuthToken = getUserIdFromAuthToken(authentication);
         }
 
-        return ResponseEntity.ok(recipeService.getRecipeById(recipeId, userIdFromAuthToken));
+        Recipe recipeById = recipeService.getRecipeById(recipeId, userIdFromAuthToken);
+        recipeService.incrementViewCount(recipeId);
+
+        return ResponseEntity.ok(recipeById);
     }
 
     @Operation(

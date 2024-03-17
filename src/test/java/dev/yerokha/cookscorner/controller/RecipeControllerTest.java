@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.yerokha.cookscorner.dto.CreateRecipeRequest;
 import dev.yerokha.cookscorner.dto.Ingredient;
 import dev.yerokha.cookscorner.dto.LoginRequest;
+import dev.yerokha.cookscorner.repository.RecipeRepository;
 import dev.yerokha.cookscorner.service.ImageService;
 import dev.yerokha.cookscorner.service.MailService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -44,13 +46,14 @@ class RecipeControllerTest {
     MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    RecipeRepository recipeRepository;
 
     @MockBean
     MailService mailService;
     @MockBean
     ImageService imageService;
 
-//    private static String accessToken;
     final String APP_JSON = "application/json";
 
     private static final String EMAIL = "existing@example.com";
@@ -68,11 +71,11 @@ class RecipeControllerTest {
                 "A classic Italian pasta dish made with eggs, cheese, pancetta, and black pepper.",
                 "main dishes",
                 new HashSet<>(Arrays.asList(
-                        new Ingredient("spaghetti", 200, "gram"),
-                        new Ingredient("pancetta", 100, "gram"),
-                        new Ingredient("parmesan cheese", 50, "gram"),
-                        new Ingredient("eggs", 2, "pieces"),
-                        new Ingredient("black pepper", 0, "to taste")
+                        new Ingredient("spaghetti", "200", "gram"),
+                        new Ingredient("pancetta", "100", "gram"),
+                        new Ingredient("parmesan cheese", "50", "gram"),
+                        new Ingredient("eggs", "2", "pieces"),
+                        new Ingredient("black pepper", "0", "to taste")
                 ))
         );
 
@@ -99,11 +102,11 @@ class RecipeControllerTest {
                 "A classic Italian pasta dish made with eggs, cheese, pancetta, and black pepper.",
                 "main dishes",
                 new HashSet<>(Arrays.asList(
-                        new Ingredient("spaghetti", 200, "gram"),
-                        new Ingredient("pancetta", 100, "gram"),
-                        new Ingredient("parmesan cheese", 50, "gram"),
-                        new Ingredient("eggs", 2, "pieces"),
-                        new Ingredient("black pepper", 0, "to taste")
+                        new Ingredient("spaghetti", "200", "gram"),
+                        new Ingredient("pancetta", "100", "gram"),
+                        new Ingredient("parmesan cheese", "50", "gram"),
+                        new Ingredient("eggs", "2", "pieces"),
+                        new Ingredient("black pepper", "0", "to taste")
                 ))
         );
 
@@ -145,8 +148,15 @@ class RecipeControllerTest {
     @Test
     @Order(5)
     void getRecipeById() throws Exception {
+        long initialViewCount = recipeRepository.getViewCount(2);
         mockMvc.perform(get("/v1/recipes/2"))
                 .andExpect(content().string(containsString("classic")));
+
+        long updatedViewCount = recipeRepository.getViewCount(2);
+
+        Assertions.assertTrue(updatedViewCount > initialViewCount,
+                "View count should be incremented after recipe was retrieved");
+
     }
 
     @Test

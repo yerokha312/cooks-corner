@@ -15,13 +15,21 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "recipe")
 public class RecipeEntity {
@@ -33,6 +41,9 @@ public class RecipeEntity {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -64,7 +75,7 @@ public class RecipeEntity {
 
     @ManyToMany
     @JoinTable(
-            name = "recipe_like_junction",
+            name = "user_recipe_likes",
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
@@ -72,14 +83,17 @@ public class RecipeEntity {
 
     @ManyToMany
     @JoinTable(
-            name = "recipe_bookmark_junction",
+            name = "user_recipe_bookmarks",
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<UserEntity> bookmarks;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "recipeEntity")
+    private List<CommentEntity> comments = new ArrayList<>();
+
     @Column(name = "view_count")
-    private Long viewCount;
+    private long viewCount;
 
     @Override
     public String toString() {
