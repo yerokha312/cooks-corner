@@ -48,6 +48,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/users/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/recipes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/comments/**").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/**").permitAll()
