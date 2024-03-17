@@ -4,6 +4,9 @@ import dev.yerokha.cookscorner.dto.Comment;
 import dev.yerokha.cookscorner.dto.CreateCommentRequest;
 import dev.yerokha.cookscorner.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
@@ -34,12 +37,14 @@ public class CommentController {
     }
 
     @Operation(
-            summary = "Registration", description = "Create a new user account",
-            tags = {"authentication", "post"},
+            summary = "Add a comment", description = "Create a new parent comment to Recipe (isReply = false) or " +
+            "reply to existing comment or leave a new comment in existing branch (isReply = true)",
+            tags = {"comment", "post"},
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Registration success"),
-                    @ApiResponse(responseCode = "400", description = "Invalid input"),
-                    @ApiResponse(responseCode = "409", description = "Username or email already taken")
+                    @ApiResponse(responseCode = "201", description = "Comment success"),
+                    @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+                    @ApiResponse(responseCode = "404", description = "Comment or recipe does not exist", content = @Content)
             }
     )
     @PostMapping
@@ -51,6 +56,20 @@ public class CommentController {
                 HttpStatus.CREATED);
     }
 
+    @Operation(
+            summary = "Get comments", description = "Get a paged list of parent comments",
+            tags = {"comment", "get"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Success"),
+                    @ApiResponse(responseCode = "404", description = "Object does not exist", content = @Content)
+            },
+            parameters = @Parameter(
+                    name = "objectId",
+                    description = "ID of recipe. It's called object because as project grows " +
+                            "there possibly can be another objects with comments",
+                    required = true,
+                    in = ParameterIn.PATH)
+    )
     @GetMapping("/{objectId}")
     public ResponseEntity<Page<Comment>> getComments(@PathVariable Long objectId,
                                                      @RequestParam(required = false) Map<String, String> params,
@@ -61,6 +80,19 @@ public class CommentController {
                 getUserIdFromAuthToken(authentication)));
     }
 
+    @Operation(
+            summary = "Get replies", description = "Get a paged list of comment replies (children comments)",
+            tags = {"comment", "get"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Success"),
+                    @ApiResponse(responseCode = "404", description = "Comment does not exist", content = @Content)
+            },
+            parameters = @Parameter(
+                    name = "parentId",
+                    description = "ID of parent comment",
+                    required = true,
+                    in = ParameterIn.PATH)
+    )
     @GetMapping("/{parentId}/replies")
     public ResponseEntity<Page<Comment>> getReplies(@PathVariable Long parentId,
                                                     @RequestParam(required = false) Map<String, String> params,

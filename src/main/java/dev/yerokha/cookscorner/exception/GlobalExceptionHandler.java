@@ -1,5 +1,6 @@
 package dev.yerokha.cookscorner.exception;
 
+import org.apache.tomcat.util.http.fileupload.impl.InvalidContentTypeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -58,6 +59,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidContentTypeException.class)
+    public ResponseEntity<String> handleInvalidContentTypeException(InvalidContentTypeException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
