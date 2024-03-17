@@ -6,7 +6,7 @@ public record Comment(
         Long commentId,
         Long parentCommentId,
         Long authorId,
-        String profilePicture,
+        String imageUrl,
         String author,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,

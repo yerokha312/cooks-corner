@@ -105,6 +105,7 @@ public class UserEntity implements UserDetails {
         this.password = password;
         this.registeredAt = LocalDateTime.now();
         this.authorities = authorities;
+        this.isDeleted = false;
     }
 
     public UserEntity(String name, String email, String password, boolean isEnabled, Set<Role> authorities) {
@@ -114,6 +115,7 @@ public class UserEntity implements UserDetails {
         this.registeredAt = LocalDateTime.now();
         this.isEnabled = isEnabled;
         this.authorities = authorities;
+        this.isDeleted = false;
     }
 
     @Override

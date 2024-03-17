@@ -8,6 +8,7 @@ public record User(
         int recipes,
         int followers,
         int following,
-        Boolean isFollowed
+        Boolean isFollowed,
+        boolean isDeleted
 ) {
 }
