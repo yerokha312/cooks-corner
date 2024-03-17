@@ -40,6 +40,9 @@ public class RecipeEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -85,7 +88,7 @@ public class RecipeEntity {
     private Set<UserEntity> bookmarks;
 
     @Column(name = "view_count")
-    private Long viewCount;
+    private long viewCount;
 
     @Override
     public String toString() {

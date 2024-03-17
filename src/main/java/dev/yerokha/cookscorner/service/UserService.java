@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
@@ -172,6 +173,11 @@ public class UserService implements UserDetailsService {
                 entity.getUserId(), entity.getName(), entity.getProfilePicture() == null ? null :
                 entity.getProfilePicture().getImageUrl()
         );
+    }
+
+    @Transactional
+    public void incrementViewCount(Long userId) {
+        userRepository.incrementViewCount(userId);
     }
 }
 

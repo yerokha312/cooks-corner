@@ -44,6 +44,7 @@ create table users
     password      varchar(255),
     bio           varchar(500),
     registered_at timestamp(6),
+    view_count    bigint,
     image_id      bigint,
     primary key (user_id),
     constraint uk_6dotkott2kjsp8vw4d0m25fb7
@@ -116,6 +117,7 @@ create table recipe
     recipe_id            identity,
     cooking_time_minutes integer,
     created_at           timestamp(6),
+    updated_at           timestamp(6),
     description          varchar(1000),
     difficulty           varchar(255) not null,
     title                varchar(255) not null,

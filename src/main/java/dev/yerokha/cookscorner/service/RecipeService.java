@@ -88,6 +88,7 @@ public class RecipeService {
 
         return new Recipe(
                 entity.getRecipeId(),
+                entity.getCreatedAt(),
                 entity.getTitle(),
                 entity.getUserEntity().getName(),
                 entity.getUserEntity().getUserId(),
@@ -105,6 +106,11 @@ public class RecipeService {
                                 ri.getMeasureUnit()))
                         .collect(Collectors.toSet())
         );
+    }
+
+    @Transactional
+    public void incrementViewCount(Long id) {
+        recipeRepository.incrementViewCount(id);
     }
 
     public Page<RecipeDto> getRecipes(Map<String, String> params, Long userIdFromAuthToken) {

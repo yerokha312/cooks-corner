@@ -81,6 +81,9 @@ public class UserEntity implements UserDetails {
     @Column(name = "registered_at")
     private LocalDateTime registeredAt;
 
+    @Column(name = "view_count")
+    private long viewCount;
+
     @Column(name = "is_enabled")
     private boolean isEnabled;
 

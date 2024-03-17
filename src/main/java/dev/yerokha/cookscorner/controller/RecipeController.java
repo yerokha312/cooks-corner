@@ -145,7 +145,10 @@ public class RecipeController {
             userIdFromAuthToken = getUserIdFromAuthToken(authentication);
         }
 
-        return ResponseEntity.ok(recipeService.getRecipeById(recipeId, userIdFromAuthToken));
+        Recipe recipeById = recipeService.getRecipeById(recipeId, userIdFromAuthToken);
+        recipeService.incrementViewCount(recipeId);
+
+        return ResponseEntity.ok(recipeById);
     }
 
     @Operation(

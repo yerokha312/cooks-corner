@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.yerokha.cookscorner.dto.CreateRecipeRequest;
 import dev.yerokha.cookscorner.dto.Ingredient;
 import dev.yerokha.cookscorner.dto.LoginRequest;
+import dev.yerokha.cookscorner.repository.RecipeRepository;
 import dev.yerokha.cookscorner.service.ImageService;
 import dev.yerokha.cookscorner.service.MailService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,8 @@ class RecipeControllerTest {
     MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    RecipeRepository recipeRepository;
 
     @MockBean
     MailService mailService;
@@ -144,8 +148,15 @@ class RecipeControllerTest {
     @Test
     @Order(5)
     void getRecipeById() throws Exception {
+        long initialViewCount = recipeRepository.getViewCount(2);
         mockMvc.perform(get("/v1/recipes/2"))
                 .andExpect(content().string(containsString("classic")));
+
+        long updatedViewCount = recipeRepository.getViewCount(2);
+
+        Assertions.assertTrue(updatedViewCount > initialViewCount,
+                "View count should be incremented after recipe was retrieved");
+
     }
 
     @Test
