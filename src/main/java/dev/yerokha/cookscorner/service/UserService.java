@@ -42,7 +42,7 @@ public class UserService implements UserDetailsService {
     }
 
     public User getUser(Long userId, Long userIdFromAuthToken) {
-        UserEntity entity = getUserById(userId);
+        UserEntity entity = getUserEntityById(userId);
         Boolean isFollowed = checkIfUserFollowed(userId, userIdFromAuthToken);
         return new User(
                 entity.getUserId(),
@@ -69,9 +69,9 @@ public class UserService implements UserDetailsService {
             throw new FollowException("You can not follow yourself");
         }
 
-        UserEntity loggedInUser = getUserById(userIdFromAuthToken);
+        UserEntity loggedInUser = getUserEntityById(userIdFromAuthToken);
 
-        UserEntity followedUser = getUserById(userId);
+        UserEntity followedUser = getUserEntityById(userId);
 
         Set<UserEntity> followingList = loggedInUser.getFollowing();
         Set<UserEntity> followersList = followedUser.getFollowers();
@@ -91,9 +91,9 @@ public class UserService implements UserDetailsService {
     }
 
     public void unfollow(Long userId, Long userIdFromAuthToken) {
-        UserEntity loggedInUser = getUserById(userIdFromAuthToken);
+        UserEntity loggedInUser = getUserEntityById(userIdFromAuthToken);
 
-        UserEntity followedUser = getUserById(userId);
+        UserEntity followedUser = getUserEntityById(userId);
 
         Set<UserEntity> followingList = loggedInUser.getFollowing();
         Set<UserEntity> followersList = followedUser.getFollowers();
@@ -111,7 +111,7 @@ public class UserService implements UserDetailsService {
         userRepository.save(followedUser);
     }
 
-    private UserEntity getUserById(Long userIdFromAuthToken) {
+    public UserEntity getUserEntityById(Long userIdFromAuthToken) {
         return userRepository.findById(userIdFromAuthToken).orElseThrow(() ->
                 new NotFoundException("User not found"));
     }
@@ -121,7 +121,7 @@ public class UserService implements UserDetailsService {
             throw new IdMismatchException("User id must match");
         }
 
-        UserEntity entity = getUserById(userIdFromAuthToken);
+        UserEntity entity = getUserEntityById(userIdFromAuthToken);
         entity.setName(request.name());
         entity.setBio(request.bio());
 

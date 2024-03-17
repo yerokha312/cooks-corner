@@ -22,6 +22,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter @Setter
@@ -73,7 +75,7 @@ public class RecipeEntity {
 
     @ManyToMany
     @JoinTable(
-            name = "recipe_like_junction",
+            name = "user_recipe_likes",
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
@@ -81,11 +83,14 @@ public class RecipeEntity {
 
     @ManyToMany
     @JoinTable(
-            name = "recipe_bookmark_junction",
+            name = "user_recipe_bookmarks",
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<UserEntity> bookmarks;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "recipeEntity")
+    private List<CommentEntity> comments = new ArrayList<>();
 
     @Column(name = "view_count")
     private long viewCount;

@@ -46,6 +46,7 @@ create table users
     registered_at timestamp(6),
     view_count    bigint,
     image_id      bigint,
+    is_deleted    boolean,
     primary key (user_id),
     constraint uk_6dotkott2kjsp8vw4d0m25fb7
         unique (email),
@@ -135,7 +136,7 @@ create table recipe
     constraint recipe_difficulty_check
         check (recipe.difficulty in ('EASY', 'MEDIUM', 'HARD'))
 );
-create table recipe_bookmark_junction
+create table user_recipe_bookmarks
 (
     recipe_id bigint not null,
     user_id   bigint not null,
@@ -160,7 +161,7 @@ create table recipe_ingredient
         foreign key (recipe_id) references recipe
 );
 
-create table recipe_like_junction
+create table user_recipe_likes
 (
     recipe_id bigint not null,
     user_id   bigint not null,
@@ -170,4 +171,38 @@ create table recipe_like_junction
     constraint fkae85gcb6owcle869isvgjnwth
         foreign key (recipe_id) references recipe
 );
+
+-- auto-generated definition
+create table comment
+(
+    comment_id        identity
+        primary key,
+    created_at        timestamp(6),
+    modified_at       timestamp(6),
+    text              varchar(255) not null,
+    user_id           bigint
+        constraint fkqm52p1v3o13hy268he0wcngr5
+            references users,
+    parent_comment_id bigint
+        constraint fkhvh0e2ybgg16bpu229a5teje7
+            references comment,
+    recipe_id         bigint
+        constraint fke5i1rxybcm40jcn98fj1jmvit
+            references recipe
+);
+
+create table user_comment_likes
+(
+    user_id    bigint not null
+        constraint fkbcucvykkopqscgu4liy54u5pd
+            references comment,
+    comment_id bigint not null
+        constraint fkggdk3uogfkd2yartj4fyyol57
+            references users,
+    primary key (user_id, comment_id)
+);
+
+
+
+
 

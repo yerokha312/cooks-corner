@@ -95,6 +95,10 @@ public class UserEntity implements UserDetails {
     )
     private Set<Role> authorities;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
+
+
     public UserEntity(String name, String email, String password, Set<Role> authorities) {
         this.name = name;
         this.email = email;

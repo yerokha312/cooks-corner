@@ -283,7 +283,7 @@ public class RecipeService {
         recipeRepository.save(recipe);
     }
 
-    private RecipeEntity getRecipeById(Long recipeId) {
+    public RecipeEntity getRecipeById(Long recipeId) {
         return recipeRepository.findById(recipeId).orElseThrow(
                 () -> new NotFoundException("Recipe not found")
         );
