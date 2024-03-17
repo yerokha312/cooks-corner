@@ -30,7 +30,7 @@ public class RecipeIngredient {
     private IngredientEntity ingredientEntity;
 
     @Column(name = "amount")
-    private double amount;
+    private String amount;
 
     @Column(name = "measure_unit")
     private String measureUnit;

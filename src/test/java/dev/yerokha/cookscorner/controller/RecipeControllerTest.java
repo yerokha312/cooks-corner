@@ -50,7 +50,6 @@ class RecipeControllerTest {
     @MockBean
     ImageService imageService;
 
-//    private static String accessToken;
     final String APP_JSON = "application/json";
 
     private static final String EMAIL = "existing@example.com";
@@ -68,11 +67,11 @@ class RecipeControllerTest {
                 "A classic Italian pasta dish made with eggs, cheese, pancetta, and black pepper.",
                 "main dishes",
                 new HashSet<>(Arrays.asList(
-                        new Ingredient("spaghetti", 200, "gram"),
-                        new Ingredient("pancetta", 100, "gram"),
-                        new Ingredient("parmesan cheese", 50, "gram"),
-                        new Ingredient("eggs", 2, "pieces"),
-                        new Ingredient("black pepper", 0, "to taste")
+                        new Ingredient("spaghetti", "200", "gram"),
+                        new Ingredient("pancetta", "100", "gram"),
+                        new Ingredient("parmesan cheese", "50", "gram"),
+                        new Ingredient("eggs", "2", "pieces"),
+                        new Ingredient("black pepper", "0", "to taste")
                 ))
         );
 
@@ -99,11 +98,11 @@ class RecipeControllerTest {
                 "A classic Italian pasta dish made with eggs, cheese, pancetta, and black pepper.",
                 "main dishes",
                 new HashSet<>(Arrays.asList(
-                        new Ingredient("spaghetti", 200, "gram"),
-                        new Ingredient("pancetta", 100, "gram"),
-                        new Ingredient("parmesan cheese", 50, "gram"),
-                        new Ingredient("eggs", 2, "pieces"),
-                        new Ingredient("black pepper", 0, "to taste")
+                        new Ingredient("spaghetti", "200", "gram"),
+                        new Ingredient("pancetta", "100", "gram"),
+                        new Ingredient("parmesan cheese", "50", "gram"),
+                        new Ingredient("eggs", "2", "pieces"),
+                        new Ingredient("black pepper", "0", "to taste")
                 ))
         );
 
