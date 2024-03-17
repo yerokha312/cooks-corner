@@ -52,7 +52,8 @@ public class UserService implements UserDetailsService {
                 entity.getRecipeEntities().size(),
                 entity.getFollowers().size(),
                 entity.getFollowing().size(),
-                isFollowed
+                isFollowed,
+                entity.isDeleted()
         );
     }
 
