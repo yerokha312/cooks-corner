@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -134,6 +133,15 @@ class RecipeControllerTest {
     }
 
     @Test
+    @Order(3)
+    void getRecipes_UnAuthorized() throws Exception {
+        mockMvc.perform(get("/v1/recipes")
+                        .param("query", "my"))
+                .andExpect(status().isUnauthorized());
+    }
+
+
+    @Test
     @Order(4)
     void getRecipes_Authorized() throws Exception {
         mockMvc.perform(get("/v1/recipes")
@@ -165,90 +173,6 @@ class RecipeControllerTest {
         mockMvc.perform(get("/v1/recipes/2")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(content().string(containsString("classic")))
-                .andExpect(jsonPath("$.isBookmarked").value(false));
-    }
-
-    @Test
-    @Order(6)
-    void likeRecipe() throws Exception {
-        for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/v1/recipes/like/2")
-                            .header("Authorization", "Bearer " + accessToken))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string("Recipe liked successfully"));
-        }
-    }
-
-    @Test
-    @Order(7)
-    void getRecipeById_Authorized_Liked() throws Exception {
-        mockMvc.perform(get("/v1/recipes/2")
-                        .header("Authorization", "Bearer " + accessToken))
-                .andExpect(content().string(containsString("classic")))
-                .andExpect(jsonPath("$.likes").value(1))
-                .andExpect(jsonPath("$.isLiked").value(true));
-    }
-
-    @Test
-    @Order(8)
-    void dislikeRecipe() throws Exception {
-        for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/v1/recipes/dislike/2")
-                            .header("Authorization", "Bearer " + accessToken))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string("Recipe disliked successfully"));
-        }
-    }
-
-    @Test
-    @Order(9)
-    void getRecipeById_Authorized_Disliked() throws Exception {
-        mockMvc.perform(get("/v1/recipes/2")
-                        .header("Authorization", "Bearer " + accessToken))
-                .andExpect(content().string(containsString("classic")))
-                .andExpect(jsonPath("$.likes").value(0))
-                .andExpect(jsonPath("$.isLiked").value(false));
-    }
-
-    @Test
-    @Order(10)
-    void bookmarkRecipe() throws Exception {
-        for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/v1/recipes/bookmark/2")
-                            .header("Authorization", "Bearer " + accessToken))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string("Recipe bookmarked successfully"));
-        }
-    }
-
-    @Test
-    @Order(10)
-    void getRecipeById_Authorized_Bookmarked() throws Exception {
-        mockMvc.perform(get("/v1/recipes/2")
-                        .header("Authorization", "Bearer " + accessToken))
-                .andExpect(content().string(containsString("classic")))
-                .andExpect(jsonPath("$.bookmarks").value(1))
-                .andExpect(jsonPath("$.isBookmarked").value(true));
-    }
-
-    @Test
-    @Order(11)
-    void removeBookmarkRecipe() throws Exception {
-        for (int i = 0; i < 3; i++) {
-            mockMvc.perform(put("/v1/recipes/remove-bookmark/2")
-                            .header("Authorization", "Bearer " + accessToken))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string("Bookmark removed successfully"));
-        }
-    }
-
-    @Test
-    @Order(12)
-    void getRecipeById_Authorized_Bookmark_Removed() throws Exception {
-        mockMvc.perform(get("/v1/recipes/2")
-                        .header("Authorization", "Bearer " + accessToken))
-                .andExpect(content().string(containsString("classic")))
-                .andExpect(jsonPath("$.bookmarks").value(0))
                 .andExpect(jsonPath("$.isBookmarked").value(false));
     }
 

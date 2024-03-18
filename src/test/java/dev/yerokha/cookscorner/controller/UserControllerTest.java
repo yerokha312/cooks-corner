@@ -72,6 +72,7 @@ class UserControllerTest {
     @Test
     @Order(2)
     void showProfile_Authorized() throws Exception {
+        Thread.sleep(1000);
         login(EMAIL, PASSWORD);
         mockMvc.perform(get("/v1/users/2")
                         .header("Authorization", "Bearer " + accessToken))
