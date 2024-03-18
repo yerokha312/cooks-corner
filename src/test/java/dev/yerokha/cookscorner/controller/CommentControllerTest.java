@@ -42,6 +42,7 @@ class CommentControllerTest {
     @Test
     @Order(1)
     void addComment() throws Exception {
+        Thread.sleep(1000);
         login(EMAIL, PASSWORD);
         CreateCommentRequest request = new CreateCommentRequest(
                 1L,

@@ -23,7 +23,6 @@ import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -34,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static dev.yerokha.cookscorner.service.TokenService.getUserIdFromAuthToken;
+
 @Tag(name = "Recipe", description = "Endpoints for recipe interaction")
 @RestController
 @RequestMapping("/v1/recipes")
@@ -48,6 +48,7 @@ public class RecipeController {
         this.objectMapper = objectMapper;
         this.validator = validator;
     }
+
     @Operation(
             summary = "Add recipe", description = "EP for creating a new recipe. Form-data request body is required",
             tags = {"recipe", "post"},
@@ -149,89 +150,5 @@ public class RecipeController {
         recipeService.incrementViewCount(recipeId);
 
         return ResponseEntity.ok(recipeById);
-    }
-
-    @Operation(
-            summary = "Like recipe", description = "Authenticated user likes recipe by it's id",
-            tags = {"recipe", "put"},
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Recipe liked"),
-                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
-            }
-    )
-    @PutMapping("/like/{recipeId}")
-    public ResponseEntity<String> likeRecipe(Authentication authentication, @PathVariable Long recipeId) {
-        Long userIdFromAuthToken = null;
-
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
-
-        recipeService.likeRecipe(recipeId, userIdFromAuthToken);
-
-        return ResponseEntity.ok("Recipe liked successfully");
-    }
-
-    @Operation(
-            summary = "Dislike recipe", description = "Authenticated user removes like from the recipe",
-            tags = {"recipe", "put"},
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Recipe disliked"),
-                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
-            }
-    )
-    @PutMapping("/dislike/{recipeId}")
-    public ResponseEntity<String> dislikeRecipe(Authentication authentication, @PathVariable Long recipeId) {
-        Long userIdFromAuthToken = null;
-
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
-
-        recipeService.dislikeRecipe(recipeId, userIdFromAuthToken);
-
-        return ResponseEntity.ok("Recipe disliked successfully");
-    }
-
-    @Operation(
-            summary = "Bookmark recipe", description = "Authenticated user saves recipe to bookmarks",
-            tags = {"recipe", "put"},
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Recipe saved"),
-                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
-            }
-    )
-    @PutMapping("/bookmark/{recipeId}")
-    public ResponseEntity<String> bookmarkRecipe(Authentication authentication, @PathVariable Long recipeId) {
-        Long userIdFromAuthToken = null;
-
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
-
-        recipeService.bookmarkRecipe(recipeId, userIdFromAuthToken);
-
-        return ResponseEntity.ok("Recipe bookmarked successfully");
-    }
-
-    @Operation(
-            summary = "Remove bookmark", description = "Authenticated user removes bookmark from the recipe",
-            tags = {"recipe", "put"},
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Recipe removed from bookmarks"),
-                    @ApiResponse(responseCode = "404", description = "Recipe not found", content = @Content)
-            }
-    )
-    @PutMapping("/remove-bookmark/{recipeId}")
-    public ResponseEntity<String> removeBookmarkRecipe(Authentication authentication, @PathVariable Long recipeId) {
-        Long userIdFromAuthToken = null;
-
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
-
-        recipeService.removeBookmark(recipeId, userIdFromAuthToken);
-
-        return ResponseEntity.ok("Bookmark removed successfully");
     }
 }
