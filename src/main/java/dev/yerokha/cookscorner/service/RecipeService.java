@@ -4,6 +4,7 @@ import dev.yerokha.cookscorner.dto.CreateRecipeRequest;
 import dev.yerokha.cookscorner.dto.Ingredient;
 import dev.yerokha.cookscorner.dto.Recipe;
 import dev.yerokha.cookscorner.dto.RecipeDto;
+import dev.yerokha.cookscorner.entity.CommentEntity;
 import dev.yerokha.cookscorner.entity.IngredientEntity;
 import dev.yerokha.cookscorner.entity.RecipeEntity;
 import dev.yerokha.cookscorner.entity.RecipeIngredient;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -97,6 +99,7 @@ public class RecipeService {
                 entity.getDescription(),
                 entity.getLikes().size(),
                 entity.getBookmarks().size(),
+                getTotalComments(entity.getComments()),
                 isLiked,
                 isBookmarked,
                 entity.getRecipeIngredients().stream()
@@ -105,6 +108,14 @@ public class RecipeService {
                                 ri.getMeasureUnit()))
                         .collect(Collectors.toSet())
         );
+    }
+
+    private int getTotalComments(List<CommentEntity> comments) {
+        int parentComments = comments.size();
+        int replyComments = comments.stream()
+                .mapToInt(comment -> comment.getReplies().size())
+                .sum();
+        return parentComments + replyComments;
     }
 
     @Transactional

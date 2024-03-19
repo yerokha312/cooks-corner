@@ -165,7 +165,7 @@ public class TokenService {
         setValue(key, encryptToken(token), ACCESS_TOKEN_EXPIRATION, TimeUnit.MINUTES);
         return new LoginResponse(
                 token,
-                refreshToken,
+                refreshToken.substring(7),
                 userId
                 );
 

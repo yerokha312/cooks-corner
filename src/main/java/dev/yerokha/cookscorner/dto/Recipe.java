@@ -15,6 +15,7 @@ public record Recipe(
         String description,
         int likes,
         int bookmarks,
+        int comments,
         Boolean isLiked,
         Boolean isBookmarked,
         Set<Ingredient> ingredients
