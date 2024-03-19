@@ -31,12 +31,12 @@ public class ApplicationConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
+        return NimbusJwtDecoder.withPublicKey(keys.publicKey()).build();
     }
 
     @Bean
     public JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(keys.getPublicKey()).privateKey(keys.getPrivateKey()).build();
+        JWK jwk = new RSAKey.Builder(keys.publicKey()).privateKey(keys.privateKey()).build();
         JWKSource<SecurityContext> source = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(source);
     }

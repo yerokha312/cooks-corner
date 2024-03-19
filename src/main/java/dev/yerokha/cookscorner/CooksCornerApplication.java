@@ -5,17 +5,19 @@ import dev.yerokha.cookscorner.entity.Role;
 import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.repository.CategoryRepository;
 import dev.yerokha.cookscorner.repository.RoleRepository;
-import dev.yerokha.cookscorner.repository.TokenRepository;
 import dev.yerokha.cookscorner.repository.UserRepository;
+import dev.yerokha.cookscorner.util.RSAKeyProperties;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
 import java.util.List;
 import java.util.Set;
 
 @SpringBootApplication
+@EnableConfigurationProperties(RSAKeyProperties.class)
 public class CooksCornerApplication {
 
     public static void main(String[] args) {
@@ -26,10 +28,8 @@ public class CooksCornerApplication {
     CommandLineRunner runner(
             RoleRepository roleRepository,
             UserRepository userRepository,
-            TokenRepository tokenRepository,
             CategoryRepository categoryRepository) {
         return args -> {
-            tokenRepository.deleteAll();
             if (roleRepository.count() > 0) {
                 return;
             }
