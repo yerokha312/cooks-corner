@@ -130,7 +130,7 @@ public class TokenService {
 
         try {
             return jwtDecoder.decode(strippedToken);
-        } catch (Exception e) {
+        } catch (InvalidTokenException e) {
             throw new InvalidTokenException("Invalid token");
         }
     }
