@@ -160,6 +160,15 @@ class CommentControllerTest {
 
     }
 
+    @Test
+    @Order(6)
+    void getRecipe() throws Exception {
+        mockMvc.perform(get("/v1/recipes/1"))
+                .andExpect(jsonPath("$.recipeId").value(1))
+                .andExpect(jsonPath("$.title").value("Test dish"))
+                .andExpect(jsonPath("$.comments").value(3));
+    }
+
     public void login(String email, String password) throws Exception {
         LoginRequest request = new LoginRequest(
                 email,
