@@ -113,8 +113,7 @@ public class UserController {
             }
     )
     @PutMapping
-    public ResponseEntity<UpdateProfileResponse>
-    updateProfile(@RequestPart("dto") String dto,
+    public ResponseEntity<UpdateProfileResponse> updateProfile(@RequestPart("dto") String dto,
                   @RequestPart(value = "image", required = false) MultipartFile image,
                   Authentication authentication) {
 
@@ -167,8 +166,7 @@ public class UserController {
     }
 
     @Operation(
-            summary = "User search", description = "Search for cooks by \"query\" param in name or bio." +
-            "query is not required, else method returns most popular cooks",
+            summary = "User's recipes", description = "Get user's recipes",
             tags = {"user", "get"},
             responses = {
                     @ApiResponse(responseCode = "200", description = "Search success"),

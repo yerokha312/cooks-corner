@@ -79,6 +79,22 @@ class AuthenticationControllerTest {
 
     @Test
     @Order(2)
+    void login_NotEnabled() throws Exception {
+        LoginRequest request = new LoginRequest(
+                "johndoe@example.com",
+                "P@ssw0rd"
+        );
+
+        String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(post("/v1/auth/login")
+                        .content(json)
+                        .contentType(APP_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(2)
     void registerCustomer_BadRequest_Name() throws Exception {
         RegistrationRequest request = new RegistrationRequest(
                 "John Doe$",
@@ -124,7 +140,7 @@ class AuthenticationControllerTest {
     void confirmEmail_InvalidToken() throws Exception {
         mockMvc.perform(put("http://localhost:8080/v1/auth/confirmation?ct=sNaG9_s2FY8yv2I--YVbkrD2Qw0QfzubLRpD1sXA4gTYAg9T_JSnEnjtXXyeHeEBaTjL65lodulIB5L8XIMi49nXzCw6-ModEfaUiAD7YsCRlTqQI9BQQrQBxeT2SuAzCykA-iaEdPDT5o6b3y8TrIXUUWsRc3UvhuzibQLLoq0Y6StCkKV0DRZjNL4Dbe07_8CL6B-zchLAeOHGczyYqDxJcB0sb1nfgiKfSffCJXot_MF6gitrKhaXvpSitvaFb-wh6hjVBIR9yJ5QJHir_6dw0T2GK7SloeaLCPIDFRPoneRlcv7Gvum4DcPUU7-5ypBb1GGhPoNxkRcP59NtGV_jF0Z9iMWIpjDkCXClKlyKZyAll7CStz_BjgdDQusR9ADuU3QyV0wFwdqi8WwdwfaAmtz-X8k7R1a1qW85BIa_ZO8E9J6nPg8V67v4yGv4eJC5R6sNeD4VGKtYze2G-8inviBaGOaQNvyQvVyufyPp-nAvuX3Bv6hsfp1McgWpjY7M4sorbLKJcCMEDT5mykPHZ0X3w0N5P4oyMnwtz-rvD6nl59SESBz2XnzkNW7NS7Pq5leEhJUD2Ad-j-eKtUoDoL0VgdygI58KGtOR7FHBfrwf-arrwBfi7s7PIKzxSU6Qul0u3PIoXxWDD6bxJKeNAVmGKqcCmoweNZaa52DG0ly1nungPDdPcMRJpwwSe7uIoC0AcMkR-rfmqCBvyA"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(content().string("Invalid token"));
+                .andExpect(content().string("Signed JWT rejected: Invalid signature"));
     }
 
     @Test

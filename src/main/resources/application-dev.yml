@@ -1,0 +1,17 @@
+rsa:
+  private-key: classpath:certs/private.pem
+  public-key: classpath:certs/public.pem
+spring:
+  data:
+    redis:
+      port: 6379
+      host: localhost
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  main:
+    banner-mode: off
+logging:
+  level:
+    org.springframework.security: debug

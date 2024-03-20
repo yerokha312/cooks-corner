@@ -57,8 +57,9 @@ public class WebSecurityConfig {
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(converter())))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(STATELESS))
-                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+//                .oauth2Login(Customizer.withDefaults())
+;
         return security.build();
     }
 

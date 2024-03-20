@@ -1,5 +1,6 @@
 package dev.yerokha.cookscorner.exception;
 
+import com.nimbusds.jose.proc.BadJWSException;
 import org.apache.tomcat.util.http.fileupload.impl.InvalidContentTypeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +66,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidContentTypeException.class)
     public ResponseEntity<String> handleInvalidContentTypeException(InvalidContentTypeException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadJWSException.class)
+    public ResponseEntity<String> handleBadJWSException(BadJWSException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
 
