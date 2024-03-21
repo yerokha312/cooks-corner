@@ -61,5 +61,14 @@ public class MailService implements NotificationService {
 
         send(to, "Password reset", emailBody);
     }
+
+    public void sendAccountRecoveryEmail(String to, String confirmationUrl, String name) {
+        Context context = new Context();
+        context.setVariables(Map.of("confirmationUrl", confirmationUrl, "name", name));
+
+        String emailBody = engine.process("account_recovery_email.html", context);
+
+        send(to, "Email confirmation", emailBody);
+    }
 }
 

@@ -4,6 +4,7 @@ import dev.yerokha.cookscorner.dto.UpdateProfileRequest;
 import dev.yerokha.cookscorner.dto.UpdateProfileResponse;
 import dev.yerokha.cookscorner.dto.User;
 import dev.yerokha.cookscorner.dto.UserDto;
+import dev.yerokha.cookscorner.entity.Image;
 import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.exception.FollowException;
 import dev.yerokha.cookscorner.exception.IdMismatchException;
@@ -12,14 +13,17 @@ import dev.yerokha.cookscorner.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.Integer.parseInt;
@@ -29,10 +33,14 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final ImageService imageService;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
-    public UserService(UserRepository userRepository, ImageService imageService) {
+    public UserService(UserRepository userRepository, ImageService imageService, PasswordEncoder passwordEncoder, TokenService tokenService) {
         this.userRepository = userRepository;
         this.imageService = imageService;
+        this.passwordEncoder = passwordEncoder;
+        this.tokenService = tokenService;
     }
 
     @Override
@@ -43,6 +51,20 @@ public class UserService implements UserDetailsService {
 
     public User getUser(Long userId, Long userIdFromAuthToken) {
         UserEntity entity = getUserEntityById(userId);
+        if (entity.isDeleted()) {
+            return new User(
+              null,
+              "Deleted User",
+              null,
+              null,
+              0,
+              0,
+              0,
+              null,
+              true
+            );
+        }
+
         Boolean isFollowed = checkIfUserFollowed(userId, userIdFromAuthToken);
         return new User(
                 entity.getUserId(),
@@ -70,9 +92,15 @@ public class UserService implements UserDetailsService {
             throw new FollowException("You can not follow yourself");
         }
 
+        Optional<UserEntity> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent() && userOptional.get().isDeleted()) {
+            throw new FollowException("You can not follow a deleted user");
+        }
+
         UserEntity loggedInUser = getUserEntityById(userIdFromAuthToken);
 
-        UserEntity followedUser = getUserEntityById(userId);
+        //noinspection OptionalGetWithoutIsPresent
+        UserEntity followedUser = userOptional.get();
 
         Set<UserEntity> followingList = loggedInUser.getFollowing();
         Set<UserEntity> followersList = followedUser.getFollowers();
@@ -144,20 +172,30 @@ public class UserService implements UserDetailsService {
         Pageable pageable = getPageable(params);
         String query = params.get("query");
         if (query == null || query.isEmpty()) {
-            return userRepository.findAllByOrderByFollowersDesc(pageable)
+            return userRepository.findAllByDeletedFalseAndEnabledTrueOrderByFollowersDesc(pageable)
                     .map(this::toDto);
         }
-        return userRepository.findByNameContainingIgnoreCaseOrBioContainingIgnoreCase(query, query, pageable)
+        return userRepository.findByNameContainingIgnoreCaseOrBioContainingIgnoreCaseAndDeletedFalseAndEnabledTrueOrderByFollowersDesc(query, query, pageable)
                 .map(this::toDto);
     }
 
     public Page<UserDto> getFollowers(Long userId, Map<String, String> params) {
+        Optional<UserEntity> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent() && userOptional.get().isDeleted()) {
+            throw new NotFoundException("User is deleted");
+        }
+
         Pageable pageable = getPageable(params);
         return userRepository.findByFollowingUserId(userId, pageable)
                 .map(this::toDto);
     }
 
     public Page<UserDto> getFollowing(Long userId, Map<String, String> params) {
+        Optional<UserEntity> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent() && userOptional.get().isDeleted()) {
+            throw new NotFoundException("User is deleted");
+        }
+
         Pageable pageable = getPageable(params);
         return userRepository.findByFollowersUserId(userId, pageable)
                 .map(this::toDto);
@@ -170,15 +208,31 @@ public class UserService implements UserDetailsService {
     }
 
     private UserDto toDto(UserEntity entity) {
+        boolean deleted = entity.isDeleted();
+        Image profilePicture = entity.getProfilePicture();
         return new UserDto(
-                entity.getUserId(), entity.getName(), entity.getProfilePicture() == null ? null :
-                entity.getProfilePicture().getImageUrl()
+                deleted ? null : entity.getUserId(),
+                deleted ? "Deleted User" : entity.getName(),
+                deleted ? null : profilePicture == null ? null : profilePicture.getImageUrl()
         );
     }
 
     @Transactional
     public void incrementViewCount(Long userId) {
         userRepository.incrementViewCount(userId);
+    }
+
+    public void setDeleted(Long userIdFromAuthToken, String password) {
+        UserEntity user = getUserEntityById(userIdFromAuthToken);
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BadCredentialsException("Password is incorrect");
+        }
+
+        user.setDeleted(true);
+        tokenService.revokeAllTokens(user.getEmail());
+
+        userRepository.save(user);
     }
 }
 

@@ -1,10 +1,13 @@
 package dev.yerokha.cookscorner.service;
 
+import dev.yerokha.cookscorner.dto.AccountRecoveryRequest;
 import dev.yerokha.cookscorner.dto.LoginRequest;
 import dev.yerokha.cookscorner.dto.LoginResponse;
 import dev.yerokha.cookscorner.dto.RegistrationRequest;
 import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.exception.EmailAlreadyTakenException;
+import dev.yerokha.cookscorner.exception.ForbiddenException;
+import dev.yerokha.cookscorner.exception.NotFoundException;
 import dev.yerokha.cookscorner.exception.UserAlreadyEnabledException;
 import dev.yerokha.cookscorner.repository.RoleRepository;
 import dev.yerokha.cookscorner.repository.UserRepository;
@@ -82,7 +85,13 @@ public class AuthenticationService {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.email(), request.password()));
+
             UserEntity entity = (UserEntity) authentication.getPrincipal();
+
+            if (entity.isDeleted()) {
+                throw new ForbiddenException("User has been deleted");
+            }
+
             return new LoginResponse(
                     tokenService.generateAccessToken(entity),
                     tokenService.generateRefreshToken(entity),
@@ -129,10 +138,27 @@ public class AuthenticationService {
         UserEntity entity = userRepository.findByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException("User not found"));
         entity.setPassword(passwordEncoder.encode(password));
-        tokenService.revokeAllRefreshTokes(email);
+        tokenService.revokeAllTokens(email);
         userRepository.save(entity);
     }
 
+    public void recover(AccountRecoveryRequest request) {
+        UserEntity entity = userRepository.findByEmail(request.email()).orElse(null);
+        if (entity == null) {
+            return;
+        }
+        String confirmationToken = tokenService.generateConfirmationToken(entity);
+        mailService.sendAccountRecoveryEmail(entity.getEmail(),
+                request.url() + "?are=" + confirmationToken, entity.getName());
+    }
+
+    public void recover(String encryptedToken) {
+        String email = tokenService.confirmationTokenIsValid(encryptedToken);
+        UserEntity user = userRepository.findByEmail(email).orElseThrow(() ->
+                new NotFoundException("User not found"));
+        user.setDeleted(false);
+        userRepository.save(user);
+    }
 }
 
 

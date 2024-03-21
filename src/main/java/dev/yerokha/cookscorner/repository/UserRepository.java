@@ -15,12 +15,13 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByEmail(String email);
 
-    Page<UserEntity> findByNameContainingIgnoreCaseOrBioContainingIgnoreCase(String name, String bio, Pageable pageable);
+    Page<UserEntity> findByNameContainingIgnoreCaseOrBioContainingIgnoreCaseAndDeletedFalseAndEnabledTrueOrderByFollowersDesc(
+            String name, String bio, Pageable pageable);
 
-    Page<UserEntity> findAllByOrderByFollowersDesc(Pageable pageable);
+    Page<UserEntity> findAllByDeletedFalseAndEnabledTrueOrderByFollowersDesc(Pageable pageable);
 
     @Modifying
-    @Query("UPDATE UserEntity u SET u.isEnabled = true WHERE u.email = :email")
+    @Query("UPDATE UserEntity u SET u.enabled = true WHERE u.email = :email")
     void enableUser(String email);
 
     boolean existsByUserIdAndFollowingUserId(Long userId, Long followeeId);

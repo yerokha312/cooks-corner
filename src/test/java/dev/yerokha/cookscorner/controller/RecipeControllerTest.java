@@ -164,7 +164,17 @@ class RecipeControllerTest {
 
         Assertions.assertTrue(updatedViewCount > initialViewCount,
                 "View count should be incremented after recipe was retrieved");
+    }
 
+    @Test
+    @Order(5)
+    void getRecipeById_DeletedUser() throws Exception {
+        mockMvc.perform(get("/v1/recipes/10"))
+                .andExpect(jsonPath("$.recipeId").value(10L))
+                .andExpect(jsonPath("$.title").value("Test dish of deleted user"))
+                .andExpect(jsonPath("$.author").value("Deleted User"))
+                .andExpect(jsonPath("$.authorId").value(nullValue()))
+                .andExpect(jsonPath("$.difficulty").value("MEDIUM"));
     }
 
     @Test

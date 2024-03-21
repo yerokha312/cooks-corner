@@ -211,7 +211,8 @@ public class TokenService {
         }
     }
 
-    public void revokeAllRefreshTokes(String email) {
+    public void revokeAllTokens(String email) {
+        deleteKey("access_token:" + email);
         List<RefreshToken> notRevokedByUsername = tokenRepository.findNotRevokedByEmail(email);
         notRevokedByUsername.forEach(token -> token.setRevoked(true));
         tokenRepository.saveAll(notRevokedByUsername);

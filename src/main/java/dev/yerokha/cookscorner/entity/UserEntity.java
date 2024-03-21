@@ -85,7 +85,7 @@ public class UserEntity implements UserDetails {
     private long viewCount;
 
     @Column(name = "is_enabled")
-    private boolean isEnabled;
+    private boolean enabled;
 
     @ManyToMany
     @JoinTable(
@@ -96,7 +96,7 @@ public class UserEntity implements UserDetails {
     private Set<Role> authorities;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted;
+    private boolean deleted;
 
 
     public UserEntity(String name, String email, String password, Set<Role> authorities) {
@@ -105,17 +105,17 @@ public class UserEntity implements UserDetails {
         this.password = password;
         this.registeredAt = LocalDateTime.now();
         this.authorities = authorities;
-        this.isDeleted = false;
+        this.deleted = false;
     }
 
-    public UserEntity(String name, String email, String password, boolean isEnabled, Set<Role> authorities) {
+    public UserEntity(String name, String email, String password, boolean enabled, Set<Role> authorities) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.registeredAt = LocalDateTime.now();
-        this.isEnabled = isEnabled;
+        this.enabled = enabled;
         this.authorities = authorities;
-        this.isDeleted = false;
+        this.deleted = false;
     }
 
     @Override
@@ -145,7 +145,7 @@ public class UserEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     @Override
@@ -161,7 +161,7 @@ public class UserEntity implements UserDetails {
 //                ", following=" + following.size() +
 //                ", followers=" + followers.size() +
                 ", registeredAt=" + registeredAt +
-                ", isEnabled=" + isEnabled +
+                ", isEnabled=" + enabled +
                 ", authorities=" + authorities +
                 '}';
     }

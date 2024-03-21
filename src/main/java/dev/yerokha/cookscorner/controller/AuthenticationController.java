@@ -1,5 +1,6 @@
 package dev.yerokha.cookscorner.controller;
 
+import dev.yerokha.cookscorner.dto.AccountRecoveryRequest;
 import dev.yerokha.cookscorner.dto.LoginRequest;
 import dev.yerokha.cookscorner.dto.LoginResponse;
 import dev.yerokha.cookscorner.dto.RegistrationRequest;
@@ -168,5 +169,17 @@ public class AuthenticationController {
                                                 @RequestBody @Valid ResetPasswordRequest request) {
         authenticationService.resetPassword(request.password(), encryptedToken);
         return ResponseEntity.ok("Password reset");
+    }
+
+    @PostMapping("/recovery")
+    public ResponseEntity<String> recover(@RequestBody AccountRecoveryRequest request) {
+        authenticationService.recover(request);
+        return ResponseEntity.ok(String.format("Recovery email sent to %s", request.email()));
+    }
+
+    @PutMapping("/recovery")
+    public ResponseEntity<String> recover(@RequestParam("are") String encryptedToken) {
+        authenticationService.recover(encryptedToken);
+        return ResponseEntity.ok("Account recovery success");
     }
 }
