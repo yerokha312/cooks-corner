@@ -12,7 +12,8 @@ import lombok.Setter;
 
 import java.util.Set;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "category")
 public class Category {
@@ -20,7 +21,7 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
-    private Byte categoryId;
+    private Long categoryId;
 
     @Column(name = "category_name")
     private String categoryName;

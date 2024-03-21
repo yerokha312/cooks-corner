@@ -59,7 +59,7 @@ public class WebSecurityConfig {
                         session.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 //                .oauth2Login(Customizer.withDefaults())
-;
+        ;
         return security.build();
     }
 

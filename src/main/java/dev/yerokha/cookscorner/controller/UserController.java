@@ -114,8 +114,8 @@ public class UserController {
     )
     @PutMapping
     public ResponseEntity<UpdateProfileResponse> updateProfile(@RequestPart("dto") String dto,
-                  @RequestPart(value = "image", required = false) MultipartFile image,
-                  Authentication authentication) {
+                                                               @RequestPart(value = "image", required = false) MultipartFile image,
+                                                               Authentication authentication) {
 
         UpdateProfileRequest request;
         try {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.yerokha.cookscorner.dto.CreateRecipeRequest;
 import dev.yerokha.cookscorner.dto.Ingredient;
 import dev.yerokha.cookscorner.dto.LoginRequest;
+import dev.yerokha.cookscorner.dto.UpdateRecipeRequest;
 import dev.yerokha.cookscorner.repository.RecipeRepository;
 import dev.yerokha.cookscorner.service.ImageService;
 import dev.yerokha.cookscorner.service.MailService;
@@ -29,6 +30,7 @@ import static dev.yerokha.cookscorner.controller.AuthenticationControllerTest.ex
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -190,5 +192,36 @@ class RecipeControllerTest {
 
         String responseContent = result.getResponse().getContentAsString();
         accessToken = extractToken(responseContent, "accessToken");
+    }
+
+    @Test
+    void updateRecipe() throws Exception {
+        UpdateRecipeRequest request = new UpdateRecipeRequest(
+                2L,
+                "Big Spaghetti Carbonara",
+                30,
+                "MEDIUM",
+                "A classic Italian pasta dish made with eggs, cheese, pancetta, and black pepper.",
+                "main dishes",
+                new HashSet<>(Arrays.asList(
+                        new Ingredient("spaghetti", "400", "gram"),
+                        new Ingredient("pancetta", "200", "gram"),
+                        new Ingredient("parmesan cheese", "100", "gram"),
+                        new Ingredient("eggs", "4", "pieces"),
+                        new Ingredient("black pepper", "0", "to taste")
+                ))
+        );
+
+        MockMultipartFile json = new MockMultipartFile(
+                "dto", null, APP_JSON, objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile image = new MockMultipartFile(
+                "image", "image.jpg", "image/jpeg", "image data".getBytes());
+
+        mockMvc.perform(multipart(PUT, "/v1/recipes")
+                        .file(json)
+                        .file(image)
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
     }
 }

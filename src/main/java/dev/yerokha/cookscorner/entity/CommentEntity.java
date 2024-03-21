@@ -42,7 +42,8 @@ public class CommentEntity {
     @JoinColumn(name = "user_id")
     private UserEntity author;
 
-    @NotNull @NotEmpty
+    @NotNull
+    @NotEmpty
     @Column(name = "text")
     private String text;
 

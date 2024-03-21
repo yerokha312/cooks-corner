@@ -11,9 +11,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RecipeRepository extends JpaRepository<RecipeEntity, Long> {
 
-    Page<RecipeEntity> findAllByCategoryCategoryId(byte categoryId, Pageable pageable);
+    Page<RecipeEntity> findAllByCategoryCategoryId(Long categoryId, Pageable pageable);
+
     Page<RecipeEntity> findByUserEntityUserId(Long userId, Pageable pageable);
+
     Page<RecipeEntity> findByBookmarksUserId(Long userId, Pageable pageable);
+
     Page<RecipeEntity> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
             String title, String description, Pageable pageable);
 
