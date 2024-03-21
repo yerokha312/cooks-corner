@@ -124,10 +124,7 @@ public class RecipeService {
     }
 
     public Page<RecipeDto> getRecipes(Map<String, String> params, Long userIdFromAuthToken) {
-        Pageable pageable = PageRequest.of(
-                parseInt(params.getOrDefault("page", "0")),
-                parseInt(params.getOrDefault("size", "12")),
-                Sort.by(Sort.Direction.DESC, "viewCount"));
+        Pageable pageable = getPageable(params);
         String query = params.get("query");
 
         if (query == null || query.isEmpty()) {
@@ -135,11 +132,6 @@ public class RecipeService {
         }
 
         query = query.toLowerCase();
-
-        if (query.startsWith("category:")) {
-            String categoryName = query.substring("category:".length());
-            return getByCategory(userIdFromAuthToken, categoryName, pageable);
-        }
 
         if (userIdFromAuthToken != null) {
             return switch (query) {
@@ -150,6 +142,14 @@ public class RecipeService {
         }
 
         return getRecipesByQuery(null, query, pageable);
+    }
+
+    private static Pageable getPageable(Map<String, String> params) {
+        Pageable pageable = PageRequest.of(
+                parseInt(params.getOrDefault("page", "0")),
+                parseInt(params.getOrDefault("size", "12")),
+                Sort.by(Sort.Direction.DESC, "viewCount"));
+        return pageable;
     }
 
     private Page<RecipeDto> getRecipesByQuery(Long userIdFromAuthToken, String query, Pageable pageable) {
@@ -186,8 +186,9 @@ public class RecipeService {
         });
     }
 
-    private Page<RecipeDto> getByCategory(Long userIdFromAuthToken, String categoryName, Pageable pageable) {
-        return recipeRepository.findByCategory_CategoryName(categoryName, pageable).map(entity -> {
+    public Page<RecipeDto> getByCategory(byte categoryId, Long userIdFromAuthToken, Map<String, String> params) {
+        Pageable pageable = getPageable(params);
+        return recipeRepository.findAllByCategoryCategoryId(categoryId, pageable).map(entity -> {
             Boolean isLiked = checkLiked(entity.getRecipeId(), userIdFromAuthToken);
             Boolean isBookmarked = checkBookmarked(entity.getRecipeId(), userIdFromAuthToken);
             return getRecipeDto(entity, isLiked, isBookmarked);

@@ -123,9 +123,8 @@ class RecipeControllerTest {
 
     @Test
     @Order(3)
-    void getRecipes_NotAuthorized() throws Exception {
-        mockMvc.perform(get("/v1/recipes")
-                        .param("query", "category:main dishes"))
+    void getRecipesByCategory_NotAuthorized() throws Exception {
+        mockMvc.perform(get("/v1/recipes/category/4"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content", hasSize(1)))
@@ -143,10 +142,9 @@ class RecipeControllerTest {
 
     @Test
     @Order(4)
-    void getRecipes_Authorized() throws Exception {
-        mockMvc.perform(get("/v1/recipes")
-                        .header("Authorization", "Bearer " + accessToken)
-                        .param("query", "category:main dishes"))
+    void getRecipesByCategory_Authorized() throws Exception {
+        mockMvc.perform(get("/v1/recipes/category/4")
+                        .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content", hasSize(1)))

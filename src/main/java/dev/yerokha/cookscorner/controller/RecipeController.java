@@ -8,6 +8,7 @@ import dev.yerokha.cookscorner.dto.RecipeDto;
 import dev.yerokha.cookscorner.service.RecipeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -127,6 +128,31 @@ public class RecipeController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
         return ResponseEntity.ok(recipeService.getRecipes(params, userIdFromAuthToken));
+    }
+
+    @Operation(
+            summary = "Recipes by category", description = "Get recipes by category id",
+            tags = {"recipe", "get"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Request success"),
+            },
+            parameters = {
+                    @Parameter(name = "category id", in = ParameterIn.PATH),
+                    @Parameter(name = "page", description = "Page number", example = "0"),
+                    @Parameter(name = "size", description = "Page size", example = "12")
+            }
+    )
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<Page<RecipeDto>> getRecipesByCategory(
+            @RequestParam(required = false) Map<String, String> params,
+            Authentication authentication,
+            @PathVariable byte categoryId) {
+        Long userIdFromAuthToken = null;
+        if (authentication != null) {
+            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
+        }
+
+        return ResponseEntity.ok(recipeService.getByCategory(categoryId, userIdFromAuthToken, params));
     }
 
     @Operation(
