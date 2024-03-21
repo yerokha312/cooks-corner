@@ -2,9 +2,11 @@ package dev.yerokha.cookscorner.service;
 
 import dev.yerokha.cookscorner.dto.Comment;
 import dev.yerokha.cookscorner.dto.CreateCommentRequest;
+import dev.yerokha.cookscorner.dto.UpdateCommentRequest;
 import dev.yerokha.cookscorner.entity.CommentEntity;
 import dev.yerokha.cookscorner.exception.NotFoundException;
 import dev.yerokha.cookscorner.repository.CommentRepository;
+import dev.yerokha.cookscorner.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,11 +24,13 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final RecipeService recipeService;
     private final UserService userService;
+    private final UserRepository userRepository;
 
-    public CommentService(CommentRepository commentRepository, RecipeService recipeService, UserService userService) {
+    public CommentService(CommentRepository commentRepository, RecipeService recipeService, UserService userService, UserRepository userRepository) {
         this.commentRepository = commentRepository;
         this.recipeService = recipeService;
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     public Comment createComment(CreateCommentRequest request, Long userIdFromAuthToken) {
@@ -70,6 +74,22 @@ public class CommentService {
 
         return commentRepository.findAllByParentCommentCommentId(parentId, pageable)
                 .map(entity -> toComment(entity, userIdFromAuthToken));
+    }
+
+    public Comment updateComment(UpdateCommentRequest request, Long userIdFromAuthToken) {
+        boolean exists = userRepository.existsById(userIdFromAuthToken);
+
+        if (!exists) {
+            throw new NotFoundException("User not found");
+        }
+
+        CommentEntity comment = commentRepository.findById(
+                request.commentId()).orElseThrow(() -> new NotFoundException("Comment not found"));
+
+        comment.setText(request.text());
+        comment.setUpdatedAt(LocalDateTime.now());
+
+        return toComment(comment, userIdFromAuthToken);
     }
 }
 

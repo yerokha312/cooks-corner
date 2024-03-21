@@ -178,7 +178,7 @@ create table comment
     comment_id        identity
         primary key,
     created_at        timestamp(6),
-    modified_at       timestamp(6),
+    updated_at       timestamp(6),
     text              varchar(255) not null,
     user_id           bigint
         constraint fkqm52p1v3o13hy268he0wcngr5

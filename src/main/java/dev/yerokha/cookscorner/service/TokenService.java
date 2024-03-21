@@ -136,6 +136,10 @@ public class TokenService {
     }
 
     public static Long getUserIdFromAuthToken(Authentication authentication) {
+        if (authentication == null) {
+            return null;
+        }
+
         Jwt jwt = (Jwt) authentication.getPrincipal();
         return jwt.getClaim("userId");
     }

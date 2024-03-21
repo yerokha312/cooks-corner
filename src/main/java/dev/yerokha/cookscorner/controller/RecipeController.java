@@ -119,13 +119,11 @@ public class RecipeController {
     )
     @GetMapping
     public ResponseEntity<Page<RecipeDto>> getRecipes(@RequestParam(required = false) Map<String, String> params, Authentication authentication) {
-        Long userIdFromAuthToken = null;
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
+        
 
         String query = params.get("query");
 
+        Long userIdFromAuthToken = getUserIdFromAuthToken(authentication);
         if (query != null && (query.equals("my") || query.equals("saved")))
             if (userIdFromAuthToken == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -150,12 +148,11 @@ public class RecipeController {
             @RequestParam(required = false) Map<String, String> params,
             Authentication authentication,
             @PathVariable Long categoryId) {
-        Long userIdFromAuthToken = null;
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
+        
 
-        return ResponseEntity.ok(recipeService.getByCategory(categoryId, userIdFromAuthToken, params));
+        return ResponseEntity.ok(recipeService.getByCategory(categoryId,
+                getUserIdFromAuthToken(authentication),
+                params));
     }
 
     @Operation(
@@ -169,13 +166,9 @@ public class RecipeController {
     )
     @GetMapping("/{recipeId}")
     public ResponseEntity<Recipe> getRecipeById(Authentication authentication, @PathVariable Long recipeId) {
-        Long userIdFromAuthToken = null;
 
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
 
-        Recipe recipeById = recipeService.getRecipeById(recipeId, userIdFromAuthToken);
+        Recipe recipeById = recipeService.getRecipeById(recipeId, getUserIdFromAuthToken(authentication));
         recipeService.incrementViewCount(recipeId);
 
         return ResponseEntity.ok(recipeById);
@@ -185,11 +178,7 @@ public class RecipeController {
     public ResponseEntity<Recipe> updateRecipe(Authentication authentication,
                                                @RequestPart(name = "dto") @Valid UpdateRecipeRequest request,
                                                @RequestPart(name = "image") MultipartFile image) {
-        Long userIdFromAuthToken = null;
-
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
+        
 
         if (image == null) {
             throw new IllegalArgumentException("Uploading image is mandatory");
@@ -199,7 +188,9 @@ public class RecipeController {
             throw new IllegalArgumentException("Uploaded file is not an image");
         }
 
-        return ResponseEntity.ok(recipeService.updateRecipe(userIdFromAuthToken, request, image));
+        return ResponseEntity.ok(recipeService.updateRecipe(getUserIdFromAuthToken(authentication),
+                request,
+                image));
 
     }
 }

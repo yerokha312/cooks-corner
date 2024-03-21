@@ -3,6 +3,7 @@ package dev.yerokha.cookscorner.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.yerokha.cookscorner.dto.CreateCommentRequest;
 import dev.yerokha.cookscorner.dto.LoginRequest;
+import dev.yerokha.cookscorner.dto.UpdateCommentRequest;
 import dev.yerokha.cookscorner.service.MailService;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -20,6 +21,7 @@ import static dev.yerokha.cookscorner.controller.AuthenticationControllerTest.ex
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -185,5 +187,23 @@ class CommentControllerTest {
 
         String responseContent = result.getResponse().getContentAsString();
         accessToken = extractToken(responseContent, "accessToken");
+    }
+
+    @Test
+    void updateComment() throws Exception {
+        UpdateCommentRequest request = new UpdateCommentRequest(
+                3L,
+                "Updated comment"
+        );
+
+        String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(put("/v1/comments")
+                        .content(json)
+                        .contentType(APP_JSON)
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(jsonPath("$.commentId").value(3L))
+                .andExpect(jsonPath("$.isUpdated").value(true))
+                .andExpect(jsonPath("$.text").value("Updated comment"));
     }
 }
