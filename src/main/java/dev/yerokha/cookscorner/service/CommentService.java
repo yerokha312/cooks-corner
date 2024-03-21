@@ -111,7 +111,8 @@ public class CommentService {
     }
 
     private CommentEntity getComment(Long commentId) {
-        return commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment not found"));
+        return commentRepository.findById(commentId).orElseThrow(
+                () -> new NotFoundException("Comment not found"));
     }
 }
 
