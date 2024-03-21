@@ -45,8 +45,7 @@ public class CommentService {
         CommentEntity entity = new CommentEntity();
         entity.setCreatedAt(LocalDateTime.now());
         if (request.isReply()) {
-            CommentEntity comment = commentRepository.findById(request.objectId()).orElseThrow(
-                    () -> new NotFoundException("Comment not found"));
+            CommentEntity comment = getComment(request.objectId());
             entity.setParentComment(comment);
         } else {
             entity.setRecipeEntity(recipeService.getRecipeById(request.objectId()));
@@ -84,8 +83,7 @@ public class CommentService {
             throw new NotFoundException("User not found");
         }
 
-        CommentEntity comment = commentRepository.findById(
-                request.commentId()).orElseThrow(() -> new NotFoundException("Comment not found"));
+        CommentEntity comment = getComment(request.commentId());
 
         if (!userIdFromAuthToken.equals(comment.getAuthor().getUserId())) {
             throw new ForbiddenException("User is not the author of this comment");
@@ -95,6 +93,25 @@ public class CommentService {
         comment.setUpdatedAt(LocalDateTime.now());
 
         return toComment(comment, userIdFromAuthToken);
+    }
+
+    public void deleteComment(Long commentId, Long userIdFromAuthToken) {
+        CommentEntity comment = getComment(commentId);
+        if (!userIdFromAuthToken.equals(comment.getAuthor().getUserId())) {
+            throw new ForbiddenException("User is not the author of this comment");
+        }
+
+        if (!comment.getReplies().isEmpty()) {
+            comment.setDeleted(true);
+            commentRepository.save(comment);
+            return;
+        }
+
+        commentRepository.delete(comment);
+    }
+
+    private CommentEntity getComment(Long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment not found"));
     }
 }
 

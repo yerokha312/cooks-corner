@@ -172,7 +172,6 @@ create table user_recipe_likes
         foreign key (recipe_id) references recipe
 );
 
--- auto-generated definition
 create table comment
 (
     comment_id        identity
@@ -188,7 +187,8 @@ create table comment
             references comment,
     recipe_id         bigint
         constraint fke5i1rxybcm40jcn98fj1jmvit
-            references recipe
+            references recipe,
+    is_deleted boolean
 );
 
 create table user_comment_likes

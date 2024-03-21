@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -120,5 +121,11 @@ public class CommentController {
     public ResponseEntity<Comment> updateComment(@RequestBody UpdateCommentRequest request,
                                                  Authentication authentication) {
         return ResponseEntity.ok(commentService.updateComment(request, getUserIdFromAuthToken(authentication)));
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<String> deleteComment(Authentication authentication, @PathVariable Long commentId) {
+        commentService.deleteComment(commentId, getUserIdFromAuthToken(authentication));
+        return new ResponseEntity<>("Comment deleted", HttpStatus.OK);
     }
 }

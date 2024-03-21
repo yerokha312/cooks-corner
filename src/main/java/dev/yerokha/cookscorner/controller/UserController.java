@@ -218,6 +218,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getFollowing(userId, params));
     }
 
+    @Operation(summary = "Delete account", description = "Delete user account. Requires a correct password",
+            tags = {"user", "delete"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Request success"),
+                    @ApiResponse(responseCode = "401", description = "Bad password"),
+                    @ApiResponse(responseCode = "404", description = "User not found"),
+            }
+    )
     @DeleteMapping
     public void deleteUser(Authentication authentication, String password) {
         userService.setDeleted(getUserIdFromAuthToken(authentication), password);

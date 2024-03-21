@@ -14,6 +14,7 @@ public record Comment(
         int replyCount,
         int likeCount,
         Boolean isLiked,
-        String text
+        String text,
+        boolean isDeleted
 ) {
 }

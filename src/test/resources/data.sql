@@ -10,6 +10,6 @@ insert into image(image_id, hash, image_name, image_url) VALUES (100, null, 'tes
 insert into recipe(cooking_time_minutes, description, difficulty, title, category_id, image_id, user_id, view_count) VALUES (10, 'It is a test dish', 'EASY', 'Test dish', 1, 99, 2, 0);
 insert into recipe(recipe_id, cooking_time_minutes, description, difficulty, title, category_id, image_id, user_id, view_count) VALUES (10, 20, 'It is a test dish', 'MEDIUM', 'Test dish of deleted user', 1, 100, 5, 0);
 
-insert into comment(comment_id, text, user_id, parent_comment_id, recipe_id) VALUES (10, 'Some comment for tests', 1, null, 1 );
-insert into comment(comment_id, text, user_id, parent_comment_id, recipe_id) VALUES (11, 'Comment of deleted user', 5, null, 1 );
+insert into comment(comment_id, text, user_id, parent_comment_id, recipe_id, is_deleted) VALUES (10, 'Some comment for tests', 1, null, 1, false );
+insert into comment(comment_id, text, user_id, parent_comment_id, recipe_id, is_deleted) VALUES (11, 'Comment of deleted user', 5, null, 1, false );
 

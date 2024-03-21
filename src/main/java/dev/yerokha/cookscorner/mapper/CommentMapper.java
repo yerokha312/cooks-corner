@@ -21,19 +21,21 @@ public class CommentMapper {
         String imageUrl = deleted ? null : (profilePicture == null ? null : profilePicture.getImageUrl());
         String name = deleted ? "Deleted User" : author.getName();
 
+        boolean commentDeleted = entity.isDeleted();
         return new Comment(
                 entity.getCommentId(),
                 entity.getParentComment() == null ? null : entity.getParentComment().getCommentId(),
-                userId,
-                imageUrl,
-                name,
+                commentDeleted ? null : userId,
+                commentDeleted ? null : imageUrl,
+                commentDeleted ? null : name,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getUpdatedAt() != null,
                 entity.getReplies().size(),
                 entity.getLikes().size(),
                 isLiked,
-                entity.getText()
+                commentDeleted ? "Comment is deleted" : entity.getText(),
+                commentDeleted
         );
     }
 }
