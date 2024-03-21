@@ -105,6 +105,17 @@ public class CommentController {
                 getUserIdFromAuthToken(authentication)));
     }
 
+    @Operation(summary = "Update comment", description = "Update comment by passing a new text",
+            tags = {"comment", "put"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Comment update success"),
+                    @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+                    @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+                    @ApiResponse(responseCode = "404", description = "Not found", content = @Content)
+            }
+
+    )
     @PutMapping
     public ResponseEntity<Comment> updateComment(@RequestBody UpdateCommentRequest request,
                                                  Authentication authentication) {

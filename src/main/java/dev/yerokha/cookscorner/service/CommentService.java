@@ -4,6 +4,7 @@ import dev.yerokha.cookscorner.dto.Comment;
 import dev.yerokha.cookscorner.dto.CreateCommentRequest;
 import dev.yerokha.cookscorner.dto.UpdateCommentRequest;
 import dev.yerokha.cookscorner.entity.CommentEntity;
+import dev.yerokha.cookscorner.exception.ForbiddenException;
 import dev.yerokha.cookscorner.exception.NotFoundException;
 import dev.yerokha.cookscorner.repository.CommentRepository;
 import dev.yerokha.cookscorner.repository.UserRepository;
@@ -85,6 +86,10 @@ public class CommentService {
 
         CommentEntity comment = commentRepository.findById(
                 request.commentId()).orElseThrow(() -> new NotFoundException("Comment not found"));
+
+        if (!userIdFromAuthToken.equals(comment.getAuthor().getUserId())) {
+            throw new ForbiddenException("User is not the author of this comment");
+        }
 
         comment.setText(request.text());
         comment.setUpdatedAt(LocalDateTime.now());

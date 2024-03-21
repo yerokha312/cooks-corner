@@ -119,7 +119,7 @@ public class RecipeController {
     )
     @GetMapping
     public ResponseEntity<Page<RecipeDto>> getRecipes(@RequestParam(required = false) Map<String, String> params, Authentication authentication) {
-        
+
 
         String query = params.get("query");
 
@@ -148,7 +148,7 @@ public class RecipeController {
             @RequestParam(required = false) Map<String, String> params,
             Authentication authentication,
             @PathVariable Long categoryId) {
-        
+
 
         return ResponseEntity.ok(recipeService.getByCategory(categoryId,
                 getUserIdFromAuthToken(authentication),
@@ -174,11 +174,21 @@ public class RecipeController {
         return ResponseEntity.ok(recipeById);
     }
 
+    @Operation(summary = "Update recipe", description = "Update recipe by passing new values",
+            tags = {"recipe", "put"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Recipe updated"),
+                    @ApiResponse(responseCode = "400", description = "Invalid input or no image", content = @Content),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+                    @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+                    @ApiResponse(responseCode = "404", description = "Recipe or user not found", content = @Content),
+            }
+    )
     @PutMapping
     public ResponseEntity<Recipe> updateRecipe(Authentication authentication,
                                                @RequestPart(name = "dto") @Valid UpdateRecipeRequest request,
                                                @RequestPart(name = "image") MultipartFile image) {
-        
+
 
         if (image == null) {
             throw new IllegalArgumentException("Uploading image is mandatory");
