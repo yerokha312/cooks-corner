@@ -15,10 +15,17 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByEmail(String email);
 
-    Page<UserEntity> findByNameContainingIgnoreCaseOrBioContainingIgnoreCaseAndDeletedFalseAndEnabledTrueOrderByFollowersDesc(
+    @Query("SELECT u FROM UserEntity u " +
+            "WHERE (LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(u.bio) LIKE LOWER(CONCAT('%', :bio, '%'))) " +
+            "AND u.deleted = false AND u.enabled = true " +
+            "ORDER BY SIZE(u.followers) DESC")
+    Page<UserEntity> findByNameOrBioSortedByFollowersCount(
             String name, String bio, Pageable pageable);
 
-    Page<UserEntity> findAllByDeletedFalseAndEnabledTrueOrderByFollowersDesc(Pageable pageable);
+    @Query("SELECT u FROM UserEntity u " +
+            "WHERE u.deleted = false AND u.enabled = true " +
+            "ORDER BY SIZE(u.followers) DESC")
+    Page<UserEntity> findAllSortedByFollowersCount(Pageable pageable);
 
     @Modifying
     @Query("UPDATE UserEntity u SET u.enabled = true WHERE u.email = :email")

@@ -172,10 +172,10 @@ public class UserService implements UserDetailsService {
         Pageable pageable = getPageable(params);
         String query = params.get("query");
         if (query == null || query.isEmpty()) {
-            return userRepository.findAllByDeletedFalseAndEnabledTrueOrderByFollowersDesc(pageable)
+            return userRepository.findAllSortedByFollowersCount(pageable)
                     .map(this::toDto);
         }
-        return userRepository.findByNameContainingIgnoreCaseOrBioContainingIgnoreCaseAndDeletedFalseAndEnabledTrueOrderByFollowersDesc(query, query, pageable)
+        return userRepository.findByNameOrBioSortedByFollowersCount(query, query, pageable)
                 .map(this::toDto);
     }
 
