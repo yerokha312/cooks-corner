@@ -223,7 +223,7 @@ public class RecipeService {
         Long recipeId = request.recipeId();
         RecipeEntity recipe = getRecipeById(recipeId);
         if (!userIdFromAuthToken.equals(recipe.getUserEntity().getUserId())) {
-            throw new ForbiddenException("User only can edit own recipes");
+            throw new ForbiddenException("User is not the author of this recipe");
         }
 
         if (image != null) {
