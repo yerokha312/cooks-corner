@@ -1,10 +1,13 @@
 package dev.yerokha.cookscorner.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.yerokha.cookscorner.dto.AccountRecoveryRequest;
 import dev.yerokha.cookscorner.dto.LoginRequest;
 import dev.yerokha.cookscorner.dto.RegistrationRequest;
 import dev.yerokha.cookscorner.dto.ResetPasswordRequest;
 import dev.yerokha.cookscorner.dto.SendEmailRequest;
+import dev.yerokha.cookscorner.entity.UserEntity;
+import dev.yerokha.cookscorner.repository.UserRepository;
 import dev.yerokha.cookscorner.service.MailService;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -43,9 +47,12 @@ class AuthenticationControllerTest {
     PasswordEncoder passwordEncoder;
     @MockBean
     MailService mailService;
+    @Autowired
+    UserRepository userRepository;
     final String APP_JSON = "application/json";
     private static String confirmationUrl;
     private static String resetPasswordUrl;
+    private static String recoveryUrl;
     private static String initialAccessToken;
     public static String accessToken;
     private static String refreshToken;
@@ -91,6 +98,23 @@ class AuthenticationControllerTest {
                         .content(json)
                         .contentType(APP_JSON))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(2)
+    void login_isDeleted() throws Exception {
+        LoginRequest request = new LoginRequest(
+                "deleted@example.com",
+                "P@ssw0rd"
+        );
+
+        String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(post("/v1/auth/login")
+                        .content(json)
+                        .contentType(APP_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("User has been deleted"));
     }
 
     @Test
@@ -360,6 +384,72 @@ class AuthenticationControllerTest {
                 confirmationUrlCaptor.capture(),
                 eq("Unexisting User")
         );
+    }
+
+    @Test
+    @Order(20)
+    void recoverAccountSendEmail() throws Exception {
+        AccountRecoveryRequest request = new AccountRecoveryRequest(
+                "deleted@example.com",
+                "P@ssw0rd",
+                "http://localhost:8080/v1/auth/recovery"
+        );
+
+        String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(post("/v1/auth/recovery")
+                .contentType(APP_JSON)
+                .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Recovery email sent to deleted@example.com"));
+
+        ArgumentCaptor<String> confirmationUrlCaptor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(mailService).sendAccountRecoveryEmail(
+                eq("deleted@example.com"),
+                confirmationUrlCaptor.capture(),
+                eq("isDeleted User")
+        );
+
+        recoveryUrl = confirmationUrlCaptor.getValue();
+    }
+
+    @Test
+    @Order(20)
+    void recoverAccountSendEmail_NotExists() throws Exception {
+        AccountRecoveryRequest request = new AccountRecoveryRequest(
+                "not-exists@example.com",
+                "P@ssw0rd",
+                "http://localhost:8080/v1/auth/recovery"
+        );
+
+        String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(post("/v1/auth/recovery")
+                .contentType(APP_JSON)
+                .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Recovery email sent to not-exists@example.com"));
+
+        ArgumentCaptor<String> confirmationUrlCaptor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(mailService, Mockito.never()).sendAccountRecoveryEmail(
+                eq("not-exists@example.com"),
+                confirmationUrlCaptor.capture(),
+                eq("Not existing User")
+        );
+    }
+
+    @Test
+    @Order(21)
+    void recoverAccount() throws Exception {
+        mockMvc.perform(put(recoveryUrl))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Account recovery success"));
+
+        Long userId = 4L;
+        UserEntity user = userRepository.findById(userId).orElse(null);
+
+        assertThat(user).isNotNull();
+        assertThat(user.isDeleted()).isFalse();
     }
 
     static String extractToken(String responseContent, String tokenName) throws JSONException {

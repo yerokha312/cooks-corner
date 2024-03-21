@@ -10,6 +10,7 @@ import dev.yerokha.cookscorner.entity.CommentEntity;
 import dev.yerokha.cookscorner.entity.IngredientEntity;
 import dev.yerokha.cookscorner.entity.RecipeEntity;
 import dev.yerokha.cookscorner.entity.RecipeIngredient;
+import dev.yerokha.cookscorner.entity.UserEntity;
 import dev.yerokha.cookscorner.enums.Difficulty;
 import dev.yerokha.cookscorner.exception.ForbiddenException;
 import dev.yerokha.cookscorner.exception.NotFoundException;
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -202,6 +204,11 @@ public class RecipeService {
     }
 
     public Page<RecipeDto> getUserRecipes(Long userId, Long userIdFromAuthToken, Map<String, String> params) {
+        Optional<UserEntity> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent() && userOptional.get().isDeleted()) {
+            throw new NotFoundException("User is deleted");
+        }
+
         Pageable pageable = PageRequest.of(
                 parseInt(params.getOrDefault("page", "0")),
                 parseInt(params.getOrDefault("size", "12")));
@@ -247,12 +254,16 @@ public class RecipeService {
         Boolean isLiked = checkLiked(recipeId, userIdFromAuthToken);
         Boolean isBookmarked = checkBookmarked(recipeId, userIdFromAuthToken);
 
+        UserEntity userEntity = recipe.getUserEntity();
+        boolean deleted = userEntity.isDeleted();
+        String name = deleted ? "Deleted User" : userEntity.getName();
+        Long userId = deleted ? null : userEntity.getUserId();
         return new Recipe(
                 recipe.getRecipeId(),
                 recipe.getUpdatedAt() == null ? recipe.getCreatedAt() : recipe.getUpdatedAt(),
                 recipe.getTitle(),
-                recipe.getUserEntity().getName(),
-                recipe.getUserEntity().getUserId(),
+                name,
+                userId,
                 recipe.getImage() == null ? null : recipe.getImage().getImageUrl(),
                 recipe.getCookingTimeMinutes(),
                 recipe.getDifficulty().name(),

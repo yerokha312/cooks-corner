@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,7 +68,7 @@ public class UserController {
     public ResponseEntity<User> showProfile(@PathVariable Long userId, Authentication authentication) {
         
         User user = userService.getUser(userId, getUserIdFromAuthToken(authentication));
-        userService.incrementViewCount(userId);
+        userService.incrementViewCount(user.userId());
         return ResponseEntity.ok(user);
     }
 
@@ -215,6 +216,19 @@ public class UserController {
     public ResponseEntity<Page<UserDto>> showFollowing(@PathVariable Long userId,
                                                        @RequestParam(required = false) Map<String, String> params) {
         return ResponseEntity.ok(userService.getFollowing(userId, params));
+    }
+
+    @Operation(summary = "Delete account", description = "Delete user account. Requires a correct password",
+            tags = {"user", "delete"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Request success"),
+                    @ApiResponse(responseCode = "401", description = "Bad password"),
+                    @ApiResponse(responseCode = "404", description = "User not found"),
+            }
+    )
+    @DeleteMapping
+    public void deleteUser(Authentication authentication, String password) {
+        userService.setDeleted(getUserIdFromAuthToken(authentication), password);
     }
 
 }

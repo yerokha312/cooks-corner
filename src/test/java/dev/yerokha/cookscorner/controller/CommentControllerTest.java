@@ -19,9 +19,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import static dev.yerokha.cookscorner.controller.AuthenticationControllerTest.accessToken;
 import static dev.yerokha.cookscorner.controller.AuthenticationControllerTest.extractToken;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -146,6 +148,23 @@ class CommentControllerTest {
     }
 
     @Test
+    @Order(4)
+    void getComments_DeletedUser() throws Exception {
+        mockMvc.perform(get("/v1/comments/1")
+                .header("Authorization", "Bearer " + accessToken))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[2].commentId").value(11L))
+                .andExpect(jsonPath("$.content[2].parentCommentId").value(nullValue()))
+                .andExpect(jsonPath("$.content[2].authorId").value(nullValue()))
+                .andExpect(jsonPath("$.content[2].author").value("Deleted User"))
+                .andExpect(jsonPath("$.content[2].imageUrl").value(nullValue()))
+                .andExpect(jsonPath("$.content[2].replyCount").value(0))
+                .andExpect(jsonPath("$.content[2].likeCount").value(0))
+                .andExpect(jsonPath("$.content[2].text").value("Comment of deleted user"))
+                .andExpect(jsonPath("$.content[2].isLiked").value(false));
+    }
+
+    @Test
     @Order(5)
     void getReplies() throws Exception {
         mockMvc.perform(get("/v1/comments/1/replies")
@@ -168,7 +187,32 @@ class CommentControllerTest {
         mockMvc.perform(get("/v1/recipes/1"))
                 .andExpect(jsonPath("$.recipeId").value(1))
                 .andExpect(jsonPath("$.title").value("Test dish"))
-                .andExpect(jsonPath("$.comments").value(3));
+                .andExpect(jsonPath("$.comments").value(4));
+    }
+
+    @Test
+    @Order(7)
+    void deleteComment() throws Exception {
+        mockMvc.perform(delete("/v1/comments/1")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Comment deleted"));
+    }
+
+    @Test
+    @Order(8)
+    void getReplies_AfterDeleted() throws Exception {
+        mockMvc.perform(get("/v1/comments/1/replies")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].commentId").value(2L))
+                .andExpect(jsonPath("$.content[0].parentCommentId").value(1L))
+                .andExpect(jsonPath("$.content[0].authorId").value(1L))
+                .andExpect(jsonPath("$.content[0].author").value("Existing User"))
+                .andExpect(jsonPath("$.content[0].replyCount").value(1))
+                .andExpect(jsonPath("$.content[0].likeCount").value(0))
+                .andExpect(jsonPath("$.content[0].isLiked").value(false))
+                .andExpect(jsonPath("$.content[0].text").value("Reply comment"));
     }
 
     public void login(String email, String password) throws Exception {

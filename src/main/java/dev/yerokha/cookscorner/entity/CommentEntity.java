@@ -66,4 +66,7 @@ public class CommentEntity {
     )
     private Set<UserEntity> likes = new HashSet<>();
 
+    @Column(name = "is_deleted")
+    private boolean deleted;
+
 }

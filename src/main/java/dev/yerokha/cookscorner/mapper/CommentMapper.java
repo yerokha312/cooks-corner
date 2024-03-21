@@ -2,6 +2,8 @@ package dev.yerokha.cookscorner.mapper;
 
 import dev.yerokha.cookscorner.dto.Comment;
 import dev.yerokha.cookscorner.entity.CommentEntity;
+import dev.yerokha.cookscorner.entity.Image;
+import dev.yerokha.cookscorner.entity.UserEntity;
 
 public class CommentMapper {
 
@@ -11,20 +13,29 @@ public class CommentMapper {
             isLiked = entity.getLikes().stream().anyMatch(
                     like -> like.getUserId().equals(userIdFromAuthentication));
         }
+
+        UserEntity author = entity.getAuthor();
+        boolean deleted = author.isDeleted();
+        Long userId = deleted ? null : author.getUserId();
+        Image profilePicture = author.getProfilePicture();
+        String imageUrl = deleted ? null : (profilePicture == null ? null : profilePicture.getImageUrl());
+        String name = deleted ? "Deleted User" : author.getName();
+
+        boolean commentDeleted = entity.isDeleted();
         return new Comment(
                 entity.getCommentId(),
                 entity.getParentComment() == null ? null : entity.getParentComment().getCommentId(),
-                entity.getAuthor().getUserId(),
-                entity.getAuthor().getProfilePicture() == null ?
-                        null : entity.getAuthor().getProfilePicture().getImageUrl(),
-                entity.getAuthor().getName(),
+                commentDeleted ? null : userId,
+                commentDeleted ? null : imageUrl,
+                commentDeleted ? null : name,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getUpdatedAt() != null,
                 entity.getReplies().size(),
                 entity.getLikes().size(),
                 isLiked,
-                entity.getText()
+                commentDeleted ? "Comment is deleted" : entity.getText(),
+                commentDeleted
         );
     }
 }

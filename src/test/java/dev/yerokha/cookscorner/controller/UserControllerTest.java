@@ -94,6 +94,19 @@ class UserControllerTest {
     }
 
     @Test
+    @Order(3)
+    void showProfile_DeletedUser() throws Exception {
+        mockMvc.perform(get("/v1/users/5")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isFollowed").value(nullValue()))
+                .andExpect(jsonPath("$.name").value("Deleted User"))
+                .andExpect(jsonPath("$.isDeleted").value(true))
+                .andExpect(jsonPath("$.followers").value(0))
+                .andExpect(jsonPath("$.following").value(0));
+    }
+
+    @Test
     @Order(4)
     void follow() throws Exception {
         for (int i = 0; i < 3; i++) {
@@ -101,6 +114,17 @@ class UserControllerTest {
                             .header("Authorization", "Bearer " + accessToken))
                     .andExpect(status().isOk())
                     .andExpect(content().string("You followed the user"));
+        }
+    }
+
+    @Test
+    @Order(4)
+    void follow_deleted() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            mockMvc.perform(post("/v1/users/follow/5")
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isForbidden())
+                    .andExpect(content().string("You can not follow a deleted user"));
         }
     }
 
@@ -204,10 +228,10 @@ class UserControllerTest {
     @Order(12)
     void search() throws Exception {
         mockMvc.perform(get("/v1/users/search")
-                        .param("query", "first"))
+                        .param("query", "second"))
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].name").value("The First Test User"));
+                .andExpect(jsonPath("$.content[0].name").value("Second User"));
     }
 
     @Test
@@ -244,6 +268,14 @@ class UserControllerTest {
     }
 
     @Test
+    @Order(15)
+    void showFollowers_DeletedUser() throws Exception {
+        mockMvc.perform(get("/v1/users/5/followers"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("User is deleted"));
+    }
+
+    @Test
     @Order(16)
     void showFollowing() throws Exception {
         mockMvc.perform(get("/v1/users/1/following"))
@@ -251,6 +283,14 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].name").value("Second User"));
+    }
+
+    @Test
+    @Order(16)
+    void showFollowing_DeletedUser() throws Exception {
+        mockMvc.perform(get("/v1/users/5/following"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("User is deleted"));
     }
 
     public void login(String email, String password) throws Exception {
