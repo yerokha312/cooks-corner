@@ -4,11 +4,14 @@ import dev.yerokha.cookscorner.dto.CreateRecipeRequest;
 import dev.yerokha.cookscorner.dto.Ingredient;
 import dev.yerokha.cookscorner.dto.Recipe;
 import dev.yerokha.cookscorner.dto.RecipeDto;
+import dev.yerokha.cookscorner.dto.UpdateRecipeRequest;
+import dev.yerokha.cookscorner.entity.Category;
 import dev.yerokha.cookscorner.entity.CommentEntity;
 import dev.yerokha.cookscorner.entity.IngredientEntity;
 import dev.yerokha.cookscorner.entity.RecipeEntity;
 import dev.yerokha.cookscorner.entity.RecipeIngredient;
 import dev.yerokha.cookscorner.enums.Difficulty;
+import dev.yerokha.cookscorner.exception.ForbiddenException;
 import dev.yerokha.cookscorner.exception.NotFoundException;
 import dev.yerokha.cookscorner.repository.CategoryRepository;
 import dev.yerokha.cookscorner.repository.IngredientRepository;
@@ -40,74 +43,44 @@ public class RecipeService {
     private final UserRepository userRepository;
     private final ImageService imageService;
     private final IngredientRepository ingredientRepository;
+    private final UserService userService;
 
-    public RecipeService(RecipeRepository recipeRepository, CategoryRepository categoryRepository, UserRepository userRepository, ImageService imageService, IngredientRepository ingredientRepository) {
+    public RecipeService(RecipeRepository recipeRepository, CategoryRepository categoryRepository, UserRepository userRepository, ImageService imageService, IngredientRepository ingredientRepository, UserService userService) {
         this.recipeRepository = recipeRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.imageService = imageService;
         this.ingredientRepository = ingredientRepository;
+        this.userService = userService;
     }
 
     @Transactional
-    public void addRecipe(CreateRecipeRequest createRecipeRequest, Long userIdFromAuthToken, MultipartFile image) {
+    public void addRecipe(CreateRecipeRequest request, Long userIdFromAuthToken, MultipartFile image) {
         RecipeEntity entity = new RecipeEntity();
+        entity.setUserEntity(userService.getUserEntityById(userIdFromAuthToken));
         entity.setCreatedAt(LocalDateTime.now());
-        entity.setTitle(createRecipeRequest.title());
+        entity.setTitle(request.title());
+        entity.setDescription(request.description());
+        entity.setCategory(getCategory(request.category()));
+        setIngredientsToRecipe(entity, request.ingredients());
         entity.setImage(imageService.processImage(image));
-        entity.setDescription(createRecipeRequest.description());
-        entity.setCategory(categoryRepository.findByCategoryNameIgnoreCase(createRecipeRequest.category()).orElseThrow(
-                () -> new NotFoundException("Category not found")));
-        Set<RecipeIngredient> recipeIngredients = new HashSet<>();
-        for (Ingredient ingredient : createRecipeRequest.ingredients()) {
-            IngredientEntity ingredientEntity = ingredientRepository.findByIngredientNameIgnoreCase(ingredient.ingredient())
-                    .orElse(new IngredientEntity(ingredient.ingredient().toLowerCase()));
-
-            RecipeIngredient recipeIngredient = new RecipeIngredient();
-            recipeIngredient.setIngredientEntity(ingredientEntity);
-            recipeIngredient.setAmount(ingredient.amount());
-            recipeIngredient.setMeasureUnit(ingredient.measureUnit());
-            recipeIngredient.setRecipeEntity(entity);
-
-            recipeIngredients.add(recipeIngredient);
-        }
-        entity.setRecipeIngredients(recipeIngredients);
-        entity.setDifficulty(Difficulty.valueOf(createRecipeRequest.difficulty().toUpperCase()));
-        entity.setCookingTimeMinutes(createRecipeRequest.cookingTimeMinutes());
-        entity.setUserEntity(userRepository.findById(userIdFromAuthToken).orElseThrow(
-                () -> new NotFoundException("User not found")));
+        entity.setDifficulty(Difficulty.valueOf(request.difficulty().toUpperCase()));
+        entity.setCookingTimeMinutes(request.cookingTimeMinutes());
 
         recipeRepository.save(entity);
+    }
+
+    private Category getCategory(String request) {
+        return categoryRepository.
+                findByCategoryNameIgnoreCase(request).orElseThrow(
+                        () -> new NotFoundException("Category not found"));
     }
 
     public Recipe getRecipeById(Long recipeId, Long userIdFromAuthToken) {
         RecipeEntity entity = recipeRepository.findById(recipeId).orElseThrow(
                 () -> new NotFoundException("Recipe not found"));
 
-        Boolean isLiked = checkLiked(recipeId, userIdFromAuthToken);
-        Boolean isBookmarked = checkBookmarked(recipeId, userIdFromAuthToken);
-
-        return new Recipe(
-                entity.getRecipeId(),
-                entity.getCreatedAt(),
-                entity.getTitle(),
-                entity.getUserEntity().getName(),
-                entity.getUserEntity().getUserId(),
-                entity.getImage() == null ? null : entity.getImage().getImageUrl(),
-                entity.getCookingTimeMinutes(),
-                entity.getDifficulty().name(),
-                entity.getDescription(),
-                entity.getLikes().size(),
-                entity.getBookmarks().size(),
-                getTotalComments(entity.getComments()),
-                isLiked,
-                isBookmarked,
-                entity.getRecipeIngredients().stream()
-                        .map(ri -> new Ingredient(ri.getIngredientEntity().getIngredientName(),
-                                ri.getAmount(),
-                                ri.getMeasureUnit()))
-                        .collect(Collectors.toSet())
-        );
+        return mapRecipe(userIdFromAuthToken, recipeId, entity);
     }
 
     private int getTotalComments(List<CommentEntity> comments) {
@@ -124,10 +97,7 @@ public class RecipeService {
     }
 
     public Page<RecipeDto> getRecipes(Map<String, String> params, Long userIdFromAuthToken) {
-        Pageable pageable = PageRequest.of(
-                parseInt(params.getOrDefault("page", "0")),
-                parseInt(params.getOrDefault("size", "12")),
-                Sort.by(Sort.Direction.DESC, "viewCount"));
+        Pageable pageable = getPageable(params);
         String query = params.get("query");
 
         if (query == null || query.isEmpty()) {
@@ -135,11 +105,6 @@ public class RecipeService {
         }
 
         query = query.toLowerCase();
-
-        if (query.startsWith("category:")) {
-            String categoryName = query.substring("category:".length());
-            return getByCategory(userIdFromAuthToken, categoryName, pageable);
-        }
 
         if (userIdFromAuthToken != null) {
             return switch (query) {
@@ -150,6 +115,13 @@ public class RecipeService {
         }
 
         return getRecipesByQuery(null, query, pageable);
+    }
+
+    private static Pageable getPageable(Map<String, String> params) {
+        return PageRequest.of(
+                parseInt(params.getOrDefault("page", "0")),
+                parseInt(params.getOrDefault("size", "12")),
+                Sort.by(Sort.Direction.DESC, "viewCount"));
     }
 
     private Page<RecipeDto> getRecipesByQuery(Long userIdFromAuthToken, String query, Pageable pageable) {
@@ -186,8 +158,9 @@ public class RecipeService {
         });
     }
 
-    private Page<RecipeDto> getByCategory(Long userIdFromAuthToken, String categoryName, Pageable pageable) {
-        return recipeRepository.findByCategory_CategoryName(categoryName, pageable).map(entity -> {
+    public Page<RecipeDto> getByCategory(Long categoryId, Long userIdFromAuthToken, Map<String, String> params) {
+        Pageable pageable = getPageable(params);
+        return recipeRepository.findAllByCategoryCategoryId(categoryId, pageable).map(entity -> {
             Boolean isLiked = checkLiked(entity.getRecipeId(), userIdFromAuthToken);
             Boolean isBookmarked = checkBookmarked(entity.getRecipeId(), userIdFromAuthToken);
             return getRecipeDto(entity, isLiked, isBookmarked);
@@ -222,7 +195,6 @@ public class RecipeService {
     }
 
 
-
     public RecipeEntity getRecipeById(Long recipeId) {
         return recipeRepository.findById(recipeId).orElseThrow(
                 () -> new NotFoundException("Recipe not found")
@@ -239,6 +211,81 @@ public class RecipeService {
             return getRecipeDto(recipeEntity, isLiked, isBookmarked);
         });
 
+    }
+
+    public Recipe updateRecipe(Long userIdFromAuthToken, UpdateRecipeRequest request, MultipartFile image) {
+        boolean exists = userRepository.existsById(userIdFromAuthToken);
+
+        if (!exists) {
+            throw new NotFoundException("User not found");
+        }
+
+        Long recipeId = request.recipeId();
+        RecipeEntity recipe = getRecipeById(recipeId);
+        if (!userIdFromAuthToken.equals(recipe.getUserEntity().getUserId())) {
+            throw new ForbiddenException("User only can edit own recipes");
+        }
+
+        if (image != null) {
+            recipe.setImage(imageService.processImage(image));
+        }
+
+        recipe.setTitle(request.title());
+        recipe.setCookingTimeMinutes(request.cookingTimeMinutes());
+        recipe.setDescription(request.description());
+        recipe.setCategory(getCategory(request.category()));
+        recipe.setDifficulty(Difficulty.valueOf(request.difficulty().toUpperCase()));
+        setIngredientsToRecipe(recipe, request.ingredients());
+        recipe.setUpdatedAt(LocalDateTime.now());
+
+        recipeRepository.save(recipe);
+
+        return mapRecipe(userIdFromAuthToken, recipeId, recipe);
+    }
+
+    private Recipe mapRecipe(Long userIdFromAuthToken, Long recipeId, RecipeEntity recipe) {
+        Boolean isLiked = checkLiked(recipeId, userIdFromAuthToken);
+        Boolean isBookmarked = checkBookmarked(recipeId, userIdFromAuthToken);
+
+        return new Recipe(
+                recipe.getRecipeId(),
+                recipe.getUpdatedAt() == null ? recipe.getCreatedAt() : recipe.getUpdatedAt(),
+                recipe.getTitle(),
+                recipe.getUserEntity().getName(),
+                recipe.getUserEntity().getUserId(),
+                recipe.getImage() == null ? null : recipe.getImage().getImageUrl(),
+                recipe.getCookingTimeMinutes(),
+                recipe.getDifficulty().name(),
+                recipe.getDescription(),
+                recipe.getLikes().size(),
+                recipe.getBookmarks().size(),
+                getTotalComments(recipe.getComments()),
+                isLiked,
+                isBookmarked,
+                recipe.getRecipeIngredients().stream()
+                        .map(ri -> new Ingredient(ri.getIngredientEntity().getIngredientName(),
+                                ri.getAmount(),
+                                ri.getMeasureUnit()))
+                        .collect(Collectors.toSet())
+        );
+    }
+
+    private void setIngredientsToRecipe(RecipeEntity recipe, Set<Ingredient> ingredients) {
+        Set<RecipeIngredient> recipeIngredients = new HashSet<>();
+        for (Ingredient ingredient : ingredients) {
+            IngredientEntity ingredientEntity = ingredientRepository.
+                    findByIngredientNameIgnoreCase(ingredient.ingredient())
+                    .orElse(new IngredientEntity(ingredient.ingredient().toLowerCase()));
+
+            RecipeIngredient recipeIngredient = new RecipeIngredient();
+            recipeIngredient.setIngredientEntity(ingredientEntity);
+            recipeIngredient.setAmount(ingredient.amount());
+            recipeIngredient.setMeasureUnit(ingredient.measureUnit());
+            recipeIngredient.setRecipeEntity(recipe);
+
+            recipeIngredients.add(recipeIngredient);
+        }
+        recipe.setRecipeIngredients(recipeIngredients);
     }
 }
 

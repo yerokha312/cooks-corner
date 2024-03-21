@@ -35,14 +35,15 @@ public class CommentEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "modified_at")
-    private LocalDateTime modifiedAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity author;
 
-    @NotNull @NotEmpty
+    @NotNull
+    @NotEmpty
     @Column(name = "text")
     private String text;
 

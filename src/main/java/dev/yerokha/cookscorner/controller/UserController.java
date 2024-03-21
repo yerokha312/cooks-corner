@@ -65,11 +65,8 @@ public class UserController {
     )
     @GetMapping("/{userId}")
     public ResponseEntity<User> showProfile(@PathVariable Long userId, Authentication authentication) {
-        Long userIdFromAuthToken = null;
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
-        User user = userService.getUser(userId, userIdFromAuthToken);
+        
+        User user = userService.getUser(userId, getUserIdFromAuthToken(authentication));
         userService.incrementViewCount(userId);
         return ResponseEntity.ok(user);
     }
@@ -114,8 +111,8 @@ public class UserController {
     )
     @PutMapping
     public ResponseEntity<UpdateProfileResponse> updateProfile(@RequestPart("dto") String dto,
-                  @RequestPart(value = "image", required = false) MultipartFile image,
-                  Authentication authentication) {
+                                                               @RequestPart(value = "image", required = false) MultipartFile image,
+                                                               Authentication authentication) {
 
         UpdateProfileRequest request;
         try {
@@ -180,11 +177,10 @@ public class UserController {
     public ResponseEntity<Page<RecipeDto>> showUserRecipes(@RequestParam(required = false) Map<String, String> params,
                                                            @PathVariable Long userId,
                                                            Authentication authentication) {
-        Long userIdFromAuthToken = null;
-        if (authentication != null) {
-            userIdFromAuthToken = getUserIdFromAuthToken(authentication);
-        }
-        return ResponseEntity.ok(recipeService.getUserRecipes(userId, userIdFromAuthToken, params));
+        
+        return ResponseEntity.ok(recipeService.getUserRecipes(userId,
+                getUserIdFromAuthToken(authentication),
+                params));
     }
 
     @Operation(

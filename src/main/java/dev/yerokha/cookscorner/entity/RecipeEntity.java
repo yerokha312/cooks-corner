@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

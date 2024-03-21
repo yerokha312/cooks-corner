@@ -4,6 +4,7 @@ import com.nimbusds.jose.proc.BadJWSException;
 import org.apache.tomcat.util.http.fileupload.impl.InvalidContentTypeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,11 +32,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<String> handleInvalidTokenException(InvalidTokenException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handleMethodArgumentNotValidException() {
-        return new ResponseEntity<>("Invalid input", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DisabledException.class)
@@ -73,5 +69,20 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<String> handleForbiddenException(ForbiddenException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidationException(MethodArgumentNotValidException exception) {
+        String errorMessage = exception.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 
 }

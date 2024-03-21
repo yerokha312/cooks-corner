@@ -1,0 +1,60 @@
+{
+  "recipeId": 2,
+  "title": "Apple Crisp",
+  "cookingTimeMinutes": 45,
+  "difficulty": "medium",
+  "description": "Indulge in the warm and comforting flavors of this classic apple crisp, topped with a crispy oatmeal crumble.",
+  "category": "desserts",
+  "ingredients": [
+    {
+      "ingredient": "apples (such as Granny Smith), peeled, cored, and sliced",
+      "amount": "6",
+      "measureUnit": ""
+    },
+    {
+      "ingredient": "granulated sugar",
+      "amount": "100",
+      "measureUnit": "grams"
+    },
+    {
+      "ingredient": "ground cinnamon",
+      "amount": "1",
+      "measureUnit": "teaspoon"
+    },
+    {
+      "ingredient": "all-purpose flour",
+      "amount": "70",
+      "measureUnit": "grams"
+    },
+    {
+      "ingredient": "rolled oats",
+      "amount": "70",
+      "measureUnit": "grams"
+    },
+    {
+      "ingredient": "brown sugar",
+      "amount": "70",
+      "measureUnit": "grams"
+    },
+    {
+      "ingredient": "unsalted butter, cold and diced",
+      "amount": "90",
+      "measureUnit": "grams"
+    },
+    {
+      "ingredient": "lemon juice",
+      "amount": "1",
+      "measureUnit": "tablespoon"
+    },
+    {
+      "ingredient": "vanilla extract",
+      "amount": "1",
+      "measureUnit": "teaspoon"
+    },
+    {
+      "ingredient": "salt",
+      "amount": "1/4",
+      "measureUnit": "teaspoon"
+    }
+  ]
+}
