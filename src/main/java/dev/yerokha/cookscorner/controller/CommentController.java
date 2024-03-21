@@ -123,6 +123,14 @@ public class CommentController {
         return ResponseEntity.ok(commentService.updateComment(request, getUserIdFromAuthToken(authentication)));
     }
 
+    @Operation(summary = "Delete comment", description = "Delete comment by comment id", tags = {"comment", "delete"},
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Comment delete success"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden, can delete only own comments"),
+                    @ApiResponse(responseCode = "404", description = "Comment not found"),
+            }
+    )
     @DeleteMapping("/{commentId}")
     public ResponseEntity<String> deleteComment(Authentication authentication, @PathVariable Long commentId) {
         commentService.deleteComment(commentId, getUserIdFromAuthToken(authentication));
