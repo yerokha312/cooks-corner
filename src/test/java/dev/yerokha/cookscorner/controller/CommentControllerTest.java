@@ -234,6 +234,7 @@ class CommentControllerTest {
     }
 
     @Test
+    @Order(9)
     void updateComment() throws Exception {
         UpdateCommentRequest request = new UpdateCommentRequest(
                 3L,
@@ -249,5 +250,20 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.commentId").value(3L))
                 .andExpect(jsonPath("$.isUpdated").value(true))
                 .andExpect(jsonPath("$.text").value("Updated comment"));
+    }
+
+    @Test
+    @Order(10)
+    void getComments_AfterUpdate() throws Exception {
+        mockMvc.perform(get("/v1/comments/2/replies")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].commentId").value(3L))
+                .andExpect(jsonPath("$.content[0].parentCommentId").value(2L))
+                .andExpect(jsonPath("$.content[0].authorId").value(1))
+                .andExpect(jsonPath("$.content[0].author").value("Existing User"))
+                .andExpect(jsonPath("$.content[0].text").value("Updated comment"))
+                .andExpect(jsonPath("$.content[0].isUpdated").value(true))
+                .andExpect(jsonPath("$.content[0].isLiked").value(false));
     }
 }
