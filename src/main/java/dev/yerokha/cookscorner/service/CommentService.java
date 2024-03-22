@@ -92,6 +92,8 @@ public class CommentService {
         comment.setText(request.text());
         comment.setUpdatedAt(LocalDateTime.now());
 
+        commentRepository.save(comment);
+
         return toComment(comment, userIdFromAuthToken);
     }
 
