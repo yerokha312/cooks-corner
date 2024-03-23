@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -234,6 +235,7 @@ class AuthenticationControllerTest {
                 .content(json)
                 .contentType(APP_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("John Doe"))
                 .andReturn();
 
         String responseContent = result.getResponse().getContentAsString();
@@ -285,6 +287,7 @@ class AuthenticationControllerTest {
                 .contentType(APP_JSON)
                 .content("Bearer " + refreshToken))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("John Doe"))
                 .andReturn();
 
         String newAccessToken = extractToken(result.getResponse().getContentAsString(),

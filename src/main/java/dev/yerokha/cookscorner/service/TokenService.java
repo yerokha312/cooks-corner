@@ -91,7 +91,7 @@ public class TokenService {
         Instant now = Instant.now();
         String scopes = getScopes(entity);
 
-        JwtClaimsSet claims = getClaims(now, expirationTime, entity.getUsername(), entity.getUserId(), scopes, tokenType);
+        JwtClaimsSet claims = getClaims(now, expirationTime, entity.getUsername(), entity.getUserId(), scopes, tokenType, entity.getName());
         return encodeToken(claims);
     }
 
@@ -101,7 +101,7 @@ public class TokenService {
                 .collect(Collectors.joining(" "));
     }
 
-    private JwtClaimsSet getClaims(Instant now, long expirationTime, String subject, Long userId, String scopes, TokenType tokenType) {
+    private JwtClaimsSet getClaims(Instant now, long expirationTime, String subject, Long userId, String scopes, TokenType tokenType, String name) {
         return JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
@@ -110,6 +110,7 @@ public class TokenService {
                 .claim("scopes", scopes)
                 .claim("tokenType", tokenType)
                 .claim("userId", userId)
+                .claim("name", name)
                 .build();
     }
 
@@ -163,14 +164,17 @@ public class TokenService {
         String subject = decodedToken.getSubject();
         Long userId = decodedToken.getClaim("userId");
         String scopes = decodedToken.getClaim("scopes");
-        JwtClaimsSet claims = getClaims(now, ACCESS_TOKEN_EXPIRATION, subject, userId, scopes, TokenType.ACCESS);
+        String name = decodedToken.getClaim("name");
+        JwtClaimsSet claims = getClaims(now, ACCESS_TOKEN_EXPIRATION, subject, userId, scopes, TokenType.ACCESS, name);
         String token = encodeToken(claims);
         String key = "access_token:" + email;
         setValue(key, encryptToken(token), ACCESS_TOKEN_EXPIRATION, TimeUnit.MINUTES);
         return new LoginResponse(
                 token,
                 refreshToken.substring(7),
-                userId
+                userId,
+                name
+
         );
 
     }
