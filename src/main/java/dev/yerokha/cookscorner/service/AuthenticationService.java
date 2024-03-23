@@ -95,7 +95,8 @@ public class AuthenticationService {
             return new LoginResponse(
                     tokenService.generateAccessToken(entity),
                     tokenService.generateRefreshToken(entity),
-                    entity.getUserId()
+                    entity.getUserId(),
+                    entity.getName()
             );
 
         } catch (AuthenticationException e) {
