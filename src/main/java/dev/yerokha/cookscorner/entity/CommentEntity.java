@@ -55,7 +55,7 @@ public class CommentEntity {
     @JoinColumn(name = "parent_comment_id")
     private CommentEntity parentComment;
 
-    @OneToMany(mappedBy = "parentComment")
+    @OneToMany(mappedBy = "parentComment", orphanRemoval = true)
     private List<CommentEntity> replies = new ArrayList<>();
 
     @ManyToMany
