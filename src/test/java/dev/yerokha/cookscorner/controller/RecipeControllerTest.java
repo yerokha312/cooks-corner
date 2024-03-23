@@ -222,14 +222,14 @@ class RecipeControllerTest {
                 ))
         );
 
-        MockMultipartFile json = new MockMultipartFile(
+        MockMultipartFile part = new MockMultipartFile(
                 "dto", null, APP_JSON, objectMapper.writeValueAsBytes(request)
         );
         MockMultipartFile image = new MockMultipartFile(
                 "image", "image.jpg", "image/jpeg", "image data".getBytes());
 
         mockMvc.perform(multipart(PUT, "/v1/recipes")
-                        .file(json)
+                        .file(part)
                         .file(image)
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
